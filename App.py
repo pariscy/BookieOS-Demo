@@ -19,82 +19,332 @@ st.set_page_config(
 
 
 # =========================================================
-# GLOBAL STREAMLIT STYLE
+# GLOBAL SCI-FI BACKGROUND
 # =========================================================
 
 st.markdown(
     """
 <style>
 
-html, body, [class*="css"] {
-    font-family: Inter, Arial, sans-serif;
-}
-
+html,
+body,
 .stApp {
-    background:
-        radial-gradient(circle at 50% -10%, rgba(241,196,0,0.09), transparent 35%),
-        radial-gradient(circle at 5% 30%, rgba(68,136,62,0.08), transparent 25%),
-        #080b09;
+    background: #050807 !important;
 }
 
 header {
     background: transparent !important;
 }
 
-#MainMenu {
-    visibility: hidden;
-}
-
+#MainMenu,
 footer {
     visibility: hidden;
 }
 
 .block-container {
-    padding-top: 0.6rem;
-    padding-bottom: 3rem;
     max-width: 1700px;
+    padding-top: 0.5rem;
+    padding-bottom: 4rem;
 }
+
+
+/* ==========================================
+   SCI-FI SPACE BACKGROUND
+========================================== */
+
+.stApp::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+
+    background:
+
+        radial-gradient(
+            circle at 50% 20%,
+            rgba(241,196,0,.12),
+            transparent 28%
+        ),
+
+        radial-gradient(
+            circle at 15% 45%,
+            rgba(68,136,62,.10),
+            transparent 25%
+        ),
+
+        radial-gradient(
+            circle at 85% 60%,
+            rgba(0,255,170,.05),
+            transparent 25%
+        ),
+
+        radial-gradient(
+            circle at 20% 10%,
+            rgba(255,255,255,.8) 0px,
+            transparent 1px
+        ),
+
+        radial-gradient(
+            circle at 75% 15%,
+            rgba(255,255,255,.6) 0px,
+            transparent 1px
+        ),
+
+        radial-gradient(
+            circle at 40% 70%,
+            rgba(255,255,255,.5) 0px,
+            transparent 1px
+        ),
+
+        linear-gradient(
+            180deg,
+            #07100b,
+            #030504
+        );
+
+    background-size:
+        auto,
+        auto,
+        auto,
+        170px 170px,
+        220px 220px,
+        260px 260px,
+        auto;
+}
+
+
+/* ==========================================
+   FUTURISTIC GRID
+========================================== */
+
+.stApp::after {
+    content: "";
+    position: fixed;
+
+    left: -10%;
+    right: -10%;
+    bottom: -25%;
+    height: 60%;
+
+    pointer-events: none;
+
+    background-image:
+        linear-gradient(
+            rgba(241,196,0,.07) 1px,
+            transparent 1px
+        ),
+        linear-gradient(
+            90deg,
+            rgba(68,136,62,.07) 1px,
+            transparent 1px
+        );
+
+    background-size: 55px 55px;
+
+    transform:
+        perspective(450px)
+        rotateX(62deg);
+
+    transform-origin: center top;
+
+    mask-image:
+        linear-gradient(
+            to bottom,
+            transparent,
+            black 35%,
+            black
+        );
+
+    z-index: 0;
+}
+
+
+/* ==========================================
+   KEEP CONTENT ABOVE BACKGROUND
+========================================== */
+
+[data-testid="stAppViewContainer"] > .main {
+    position: relative;
+    z-index: 2;
+}
+
+
+/* ==========================================
+   FLOATING SPORTS
+========================================== */
+
+.sports-space {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: 1;
+}
+
+.sport {
+    position: absolute;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 65px;
+    height: 65px;
+
+    border-radius: 50%;
+
+    font-size: 28px;
+
+    background:
+        radial-gradient(
+            circle,
+            rgba(241,196,0,.15),
+            rgba(9,16,11,.55)
+        );
+
+    border:
+        1px solid rgba(241,196,0,.25);
+
+    box-shadow:
+        0 0 20px rgba(241,196,0,.10),
+        inset 0 0 20px rgba(68,136,62,.08);
+
+    backdrop-filter: blur(5px);
+
+    animation:
+        floatSport 8s ease-in-out infinite;
+}
+
+.s1 {
+    left: 3%;
+    top: 21%;
+}
+
+.s2 {
+    right: 4%;
+    top: 25%;
+    animation-delay: -2s;
+}
+
+.s3 {
+    left: 8%;
+    top: 68%;
+    animation-delay: -4s;
+}
+
+.s4 {
+    right: 7%;
+    top: 70%;
+    animation-delay: -6s;
+}
+
+.s5 {
+    right: 20%;
+    top: 12%;
+    width: 52px;
+    height: 52px;
+    font-size: 23px;
+    animation-delay: -3s;
+}
+
+@keyframes floatSport {
+
+    0%,100% {
+        transform:
+            translateY(0px)
+            rotate(0deg);
+    }
+
+    50% {
+        transform:
+            translateY(-22px)
+            rotate(8deg);
+    }
+}
+
+
+/* ==========================================
+   STREAMLIT CONTAINERS
+========================================== */
 
 [data-testid="stVerticalBlockBorderWrapper"] {
-    background: rgba(13,17,14,0.92);
-    border: 1px solid rgba(241,196,0,0.18) !important;
+    background:
+        linear-gradient(
+            145deg,
+            rgba(11,17,13,.90),
+            rgba(7,10,8,.87)
+        );
+
+    border:
+        1px solid rgba(241,196,0,.20) !important;
+
     border-radius: 18px;
-    box-shadow: 0 0 30px rgba(0,0,0,0.4);
+
+    backdrop-filter: blur(12px);
+
+    box-shadow:
+        0 0 30px rgba(0,0,0,.35),
+        inset 0 0 30px rgba(68,136,62,.025);
 }
+
 
 [data-testid="stChatMessage"] {
-    background: rgba(14,18,15,0.92);
-    border: 1px solid rgba(255,255,255,0.06);
-    border-radius: 16px;
+    background: rgba(10,15,11,.92);
+    border: 1px solid rgba(241,196,0,.12);
+    border-radius: 15px;
 }
 
+
 [data-testid="stChatInput"] {
+    background: rgba(7,11,8,.95);
     border-radius: 14px;
 }
 
+
 .stButton > button {
-    background: linear-gradient(135deg, #F1C400, #CBA600);
+    background:
+        linear-gradient(
+            135deg,
+            #F1C400,
+            #C9A500
+        );
+
     color: #10120f;
+
+    border: none;
+
+    border-radius: 10px;
+
     font-weight: 900;
-    border: none;
-    border-radius: 12px;
-}
-
-.stButton > button:hover {
-    background: #FFD928;
-    color: #10120f;
-    border: none;
-}
-
-h1, h2, h3 {
-    color: #F4F7F3;
-}
-
-p {
-    color: #AAB2AC;
 }
 
 </style>
+
+
+<div class="sports-space">
+
+    <div class="sport s1">
+        ⚽
+    </div>
+
+    <div class="sport s2">
+        🏀
+    </div>
+
+    <div class="sport s3">
+        🏎️
+    </div>
+
+    <div class="sport s4">
+        🎾
+    </div>
+
+    <div class="sport s5">
+        🏆
+    </div>
+
+</div>
 """,
     unsafe_allow_html=True
 )
@@ -110,12 +360,14 @@ client = OpenAI(
 
 
 # =========================================================
-# HQ VISUAL
+# SCI-FI HQ VISUAL
 # =========================================================
 
-hq_html = """
+hq = """
 <!DOCTYPE html>
+
 <html>
+
 <head>
 
 <style>
@@ -126,403 +378,379 @@ hq_html = """
 
 body {
     margin: 0;
-    background: transparent;
-    font-family: Arial, Helvetica, sans-serif;
     overflow: hidden;
+    background: transparent;
+    font-family: Arial, sans-serif;
     color: white;
 }
 
 .hq {
+
     position: relative;
-    width: 100%;
-    height: 620px;
+
+    height: 610px;
+
     overflow: hidden;
 
-    background:
-        linear-gradient(rgba(8,12,9,.78), rgba(6,9,7,.93)),
-        repeating-linear-gradient(
-            90deg,
-            rgba(241,196,0,.025) 0px,
-            rgba(241,196,0,.025) 1px,
-            transparent 1px,
-            transparent 70px
-        ),
-        repeating-linear-gradient(
-            0deg,
-            rgba(68,136,62,.025) 0px,
-            rgba(68,136,62,.025) 1px,
-            transparent 1px,
-            transparent 70px
-        );
-
-    border: 1px solid rgba(241,196,0,.20);
     border-radius: 24px;
 
+    border:
+        1px solid rgba(241,196,0,.25);
+
+    background:
+
+        radial-gradient(
+            circle at center,
+            rgba(241,196,0,.08),
+            transparent 32%
+        ),
+
+        linear-gradient(
+            rgba(5,10,7,.88),
+            rgba(3,6,4,.96)
+        );
+
     box-shadow:
-        inset 0 0 80px rgba(0,0,0,.8),
-        0 0 50px rgba(0,0,0,.5);
+        inset 0 0 100px rgba(0,0,0,.85),
+        0 0 45px rgba(0,0,0,.55);
 }
 
 
-/* =======================================================
-   TOP HUD
-======================================================= */
+/* HEADER */
 
-.topbar {
+.title {
+
     position: absolute;
-    top: 18px;
-    left: 26px;
-    right: 26px;
 
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-}
+    top: 20px;
+    left: 30px;
 
-.brand {
-    font-size: 28px;
+    font-size: 30px;
+
     font-weight: 900;
+
     letter-spacing: 3px;
 }
 
-.brand-yellow {
+.yellow {
     color: #F1C400;
 }
 
-.brand-green {
-    color: #62C65B;
+.green {
+    color: #59BE52;
 }
 
-.subtitle {
-    margin-top: 5px;
-    color: #758078;
+.sub {
+
+    position: absolute;
+
+    top: 60px;
+    left: 32px;
+
+    color: #69766D;
+
     font-size: 10px;
+
     letter-spacing: 2px;
 }
 
-.clock {
-    text-align: right;
-    color: #BBC3BD;
-    font-size: 11px;
-    letter-spacing: 1px;
-}
 
-.clock strong {
-    display: block;
-    color: #F1C400;
-    font-size: 20px;
-}
+/* CENTRAL CORE */
 
+.core-wrap {
 
-/* =======================================================
-   CORE
-======================================================= */
-
-.core-zone {
     position: absolute;
 
     left: 50%;
     top: 52%;
 
-    transform: translate(-50%, -50%);
+    transform:
+        translate(-50%,-50%);
 
-    width: 330px;
-    height: 330px;
+    width: 350px;
+    height: 350px;
 }
 
-.core-ring-1,
-.core-ring-2,
-.core-ring-3 {
+
+.ring1,
+.ring2,
+.ring3 {
+
     position: absolute;
+
     border-radius: 50%;
 }
 
-.core-ring-1 {
+
+.ring1 {
+
     inset: 0;
-    border: 1px solid rgba(241,196,0,.25);
-    animation: rotate 18s linear infinite;
+
+    border:
+        1px solid rgba(241,196,0,.30);
+
+    animation:
+        rotate 16s linear infinite;
 }
 
-.core-ring-2 {
-    inset: 27px;
-    border: 2px dashed rgba(68,136,62,.45);
-    animation: rotateReverse 13s linear infinite;
+
+.ring2 {
+
+    inset: 30px;
+
+    border:
+        2px dashed rgba(75,190,70,.35);
+
+    animation:
+        reverseRotate 12s linear infinite;
 }
 
-.core-ring-3 {
-    inset: 58px;
-    border: 1px solid rgba(241,196,0,.65);
+
+.ring3 {
+
+    inset: 65px;
+
+    border:
+        1px solid rgba(241,196,0,.7);
+
     box-shadow:
-        0 0 25px rgba(241,196,0,.25),
-        inset 0 0 25px rgba(241,196,0,.15);
-    animation: pulse 2.5s ease-in-out infinite;
+        0 0 30px rgba(241,196,0,.15);
+
+    animation:
+        pulse 2.6s ease-in-out infinite;
 }
+
 
 .core {
+
     position: absolute;
 
-    width: 150px;
-    height: 150px;
+    left: 95px;
+    top: 95px;
 
-    left: 90px;
-    top: 90px;
+    width: 160px;
+    height: 160px;
 
     border-radius: 50%;
 
     display: flex;
+
     align-items: center;
     justify-content: center;
+
     text-align: center;
 
+    border:
+        2px solid #F1C400;
+
     background:
-        radial-gradient(circle at 50% 45%,
-            rgba(255,231,104,.95),
-            rgba(241,196,0,.55) 18%,
-            rgba(46,92,40,.25) 48%,
-            rgba(5,10,6,.9) 75%
+
+        radial-gradient(
+            circle,
+            rgba(241,196,0,.8),
+            rgba(68,136,62,.28) 35%,
+            rgba(5,9,6,.96) 70%
         );
 
-    border: 2px solid #F1C400;
-
     box-shadow:
-        0 0 20px #F1C400,
-        0 0 50px rgba(241,196,0,.45),
-        0 0 100px rgba(68,136,62,.25);
+        0 0 25px #F1C400,
+        0 0 75px rgba(241,196,0,.38);
 
-    animation: corePulse 2.4s ease-in-out infinite;
+    animation:
+        corePulse 2s ease-in-out infinite;
 }
 
-.core-title {
+
+.core-name {
+
+    font-size: 20px;
+
     font-weight: 900;
-    font-size: 18px;
+
     letter-spacing: 2px;
 }
 
-.core-small {
-    color: #D3D8D4;
-    font-size: 8px;
-    margin-top: 5px;
+
+.core-status {
+
+    color: #70E268;
+
+    margin-top: 8px;
+
+    font-size: 9px;
+
     letter-spacing: 1px;
 }
 
-.core-online {
-    color: #79E16C;
-    font-size: 9px;
-    margin-top: 8px;
-}
 
-
-/* =======================================================
-   CONNECTION LINES
-======================================================= */
-
-.line {
-    position: absolute;
-    height: 1px;
-    background: linear-gradient(
-        90deg,
-        transparent,
-        #F1C400,
-        rgba(68,136,62,.9),
-        transparent
-    );
-
-    opacity: .65;
-    transform-origin: center;
-    box-shadow: 0 0 8px rgba(241,196,0,.5);
-}
-
-.l1 {
-    width: 205px;
-    left: calc(50% - 355px);
-    top: 210px;
-    transform: rotate(15deg);
-}
-
-.l2 {
-    width: 190px;
-    left: calc(50% - 350px);
-    top: 315px;
-}
-
-.l3 {
-    width: 210px;
-    left: calc(50% - 360px);
-    top: 420px;
-    transform: rotate(-15deg);
-}
-
-.r1 {
-    width: 205px;
-    right: calc(50% - 355px);
-    top: 210px;
-    transform: rotate(-15deg);
-}
-
-.r2 {
-    width: 190px;
-    right: calc(50% - 350px);
-    top: 315px;
-}
-
-.r3 {
-    width: 210px;
-    right: calc(50% - 360px);
-    top: 420px;
-    transform: rotate(15deg);
-}
-
-
-/* =======================================================
-   AGENT NODES
-======================================================= */
+/* AGENTS */
 
 .agent {
+
     position: absolute;
 
-    width: 260px;
-    min-height: 100px;
+    width: 255px;
 
-    padding: 14px 16px;
+    padding: 15px;
+
+    border-radius: 14px;
 
     background:
         linear-gradient(
             135deg,
-            rgba(18,25,20,.96),
-            rgba(8,13,10,.92)
+            rgba(13,20,15,.96),
+            rgba(7,12,8,.92)
         );
 
-    border: 1px solid rgba(241,196,0,.20);
-    border-radius: 14px;
+    border:
+        1px solid rgba(241,196,0,.24);
 
     box-shadow:
-        inset 0 0 20px rgba(68,136,62,.04),
-        0 0 18px rgba(0,0,0,.45);
+        0 0 22px rgba(0,0,0,.45);
 }
+
 
 .agent.online {
-    border-color: rgba(79,195,72,.40);
+    border-color:
+        rgba(81,213,76,.38);
 }
 
-.agent.planned {
-    opacity: .72;
-}
-
-.agent-icon {
-    float: left;
-
-    width: 46px;
-    height: 46px;
-
-    border-radius: 50%;
-
-    margin-right: 12px;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    font-size: 21px;
-
-    background: rgba(241,196,0,.07);
-
-    border: 1px solid rgba(241,196,0,.35);
-
-    box-shadow:
-        0 0 15px rgba(241,196,0,.10);
-}
-
-.online .agent-icon {
-    border-color: rgba(86,216,77,.55);
-    box-shadow: 0 0 15px rgba(86,216,77,.13);
-}
-
-.agent-name {
-    font-size: 13px;
-    font-weight: 900;
-    letter-spacing: .5px;
-}
-
-.agent-desc {
-    margin-top: 5px;
-    color: #78837B;
-    font-size: 9px;
-    line-height: 1.4;
-}
-
-.status-online {
-    margin-top: 8px;
-    color: #73E16B;
-    font-size: 9px;
-    font-weight: 900;
-    letter-spacing: 1px;
-}
-
-.status-next {
-    margin-top: 8px;
-    color: #F1C400;
-    font-size: 9px;
-    font-weight: 900;
-    letter-spacing: 1px;
-}
 
 .a1 {
+    top: 140px;
     left: 4%;
-    top: 145px;
 }
 
 .a2 {
+    top: 275px;
     left: 4%;
-    top: 270px;
 }
 
 .a3 {
+    top: 410px;
     left: 4%;
-    top: 395px;
 }
 
 .a4 {
+    top: 140px;
     right: 4%;
-    top: 145px;
 }
 
 .a5 {
+    top: 275px;
     right: 4%;
-    top: 270px;
 }
 
 .a6 {
+    top: 410px;
     right: 4%;
-    top: 395px;
 }
 
 
-/* =======================================================
-   BOTTOM HUD
-======================================================= */
+.agent-title {
 
-.bottom-status {
-    position: absolute;
+    font-size: 13px;
 
-    bottom: 15px;
-    left: 50%;
+    font-weight: 900;
+}
 
-    transform: translateX(-50%);
 
-    color: #657067;
+.agent-job {
+
+    color: #718078;
 
     font-size: 9px;
-    letter-spacing: 2px;
+
+    line-height: 1.5;
+
+    margin-top: 6px;
 }
 
-.bottom-status span {
+
+.online-status {
+
+    color: #6EE466;
+
+    font-size: 9px;
+
+    font-weight: 900;
+
+    margin-top: 8px;
+}
+
+
+.planned-status {
+
     color: #F1C400;
+
+    font-size: 9px;
+
+    font-weight: 900;
+
+    margin-top: 8px;
 }
 
 
-/* =======================================================
-   ANIMATIONS
-======================================================= */
+/* CONNECTIONS */
+
+.connector {
+
+    position: absolute;
+
+    height: 1px;
+
+    width: 180px;
+
+    opacity: .65;
+
+    background:
+
+        linear-gradient(
+            90deg,
+            transparent,
+            #F1C400,
+            #44883E,
+            transparent
+        );
+
+    box-shadow:
+        0 0 8px rgba(241,196,0,.35);
+}
+
+
+.c1 {
+    left: calc(50% - 340px);
+    top: 210px;
+}
+
+.c2 {
+    left: calc(50% - 340px);
+    top: 340px;
+}
+
+.c3 {
+    left: calc(50% - 340px);
+    top: 470px;
+}
+
+
+.c4 {
+    right: calc(50% - 340px);
+    top: 210px;
+}
+
+.c5 {
+    right: calc(50% - 340px);
+    top: 340px;
+}
+
+.c6 {
+    right: calc(50% - 340px);
+    top: 470px;
+}
+
+
+/* ANIMATIONS */
 
 @keyframes rotate {
 
@@ -535,7 +763,8 @@ body {
     }
 }
 
-@keyframes rotateReverse {
+
+@keyframes reverseRotate {
 
     from {
         transform: rotate(360deg);
@@ -546,52 +775,38 @@ body {
     }
 }
 
+
 @keyframes pulse {
 
     0%,100% {
-        opacity: .4;
-        transform: scale(.98);
+        opacity: .35;
     }
 
     50% {
         opacity: 1;
-        transform: scale(1.03);
     }
 }
+
 
 @keyframes corePulse {
 
     0%,100% {
+
         box-shadow:
-            0 0 18px #F1C400,
-            0 0 45px rgba(241,196,0,.35);
+            0 0 20px #F1C400,
+            0 0 55px rgba(241,196,0,.25);
     }
 
     50% {
+
         box-shadow:
-            0 0 28px #F1C400,
-            0 0 80px rgba(241,196,0,.60);
+            0 0 35px #F1C400,
+            0 0 100px rgba(241,196,0,.5);
     }
-}
-
-
-/* =======================================================
-   RESPONSIVE
-======================================================= */
-
-@media (max-width: 1000px) {
-
-    .agent {
-        width: 205px;
-    }
-
-    .core-zone {
-        transform: translate(-50%, -50%) scale(.82);
-    }
-
 }
 
 </style>
+
 </head>
 
 
@@ -600,304 +815,210 @@ body {
 <div class="hq">
 
 
-    <!-- TOP -->
-
-    <div class="topbar">
-
-        <div>
-
-            <div class="brand">
-
-                <span class="brand-yellow">
-                    ◉ BOOKIE
-                </span>
-
-                <span class="brand-green">
-                    OS
-                </span>
-
-            </div>
-
-            <div class="subtitle">
-                ARTIFICIAL INTELLIGENCE OPERATIONS SYSTEM · BOOKIECO HQ
-            </div>
-
-        </div>
-
-
-        <div class="clock">
-
-            LARNACA · CYPRUS
-
-            <strong id="clock">
-                00:00:00
-            </strong>
-
-            HQ NETWORK ACTIVE
-
-        </div>
-
-    </div>
-
-
-
-    <!-- CONNECTIONS -->
-
-    <div class="line l1"></div>
-    <div class="line l2"></div>
-    <div class="line l3"></div>
-
-    <div class="line r1"></div>
-    <div class="line r2"></div>
-    <div class="line r3"></div>
-
-
-
-    <!-- LEFT AGENTS -->
-
-    <div class="agent online a1">
-
-        <div class="agent-icon">
-            🔎
-        </div>
-
-        <div class="agent-name">
-            WEEKLY MATCH SCOUT
-        </div>
-
-        <div class="agent-desc">
-            Scans upcoming sport events and identifies the strongest marketing opportunities.
-        </div>
-
-        <div class="status-online">
-            ● ONLINE
-        </div>
-
-    </div>
-
-
-
-    <div class="agent online a2">
-
-        <div class="agent-icon">
-            🧠
-        </div>
-
-        <div class="agent-name">
-            BET RESEARCHER
-        </div>
-
-        <div class="agent-desc">
-            Analyses teams, players, form, statistics and betting concepts.
-        </div>
-
-        <div class="status-online">
-            ● ONLINE · AUTO
-        </div>
-
-    </div>
-
-
-
-    <div class="agent planned a3">
-
-        <div class="agent-icon">
-            📣
-        </div>
-
-        <div class="agent-name">
-            MARKETING MANAGER
-        </div>
-
-        <div class="agent-desc">
-            Converts agent intelligence into BookieCo's weekly marketing plan.
-        </div>
-
-        <div class="status-next">
-            COMING NEXT
-        </div>
-
-    </div>
-
-
-
-    <!-- RIGHT AGENTS -->
-
-    <div class="agent planned a4">
-
-        <div class="agent-icon">
-            🎁
-        </div>
-
-        <div class="agent-name">
-            PROMOTION SELECTOR
-        </div>
-
-        <div class="agent-desc">
-            Selects the most suitable BookieCo promotion for each event or campaign.
-        </div>
-
-        <div class="status-next">
-            PLANNED
-        </div>
-
-    </div>
-
-
-
-    <div class="agent planned a5">
-
-        <div class="agent-icon">
-            🎨
-        </div>
-
-        <div class="agent-name">
-            CREATIVE DIRECTOR
-        </div>
-
-        <div class="agent-desc">
-            Chooses templates, visual direction, players, teams and campaign assets.
-        </div>
-
-        <div class="status-next">
-            PLANNED
-        </div>
-
-    </div>
-
-
-
-    <div class="agent planned a6">
-
-        <div class="agent-icon">
-            ✍️
-        </div>
-
-        <div class="agent-name">
-            SOCIAL MEDIA WRITER
-        </div>
-
-        <div class="agent-desc">
-            Creates headlines, captions, story copy and calls-to-action.
-        </div>
-
-        <div class="status-next">
-            PLANNED
-        </div>
-
-    </div>
-
-
-
-    <!-- CENTRAL CORE -->
-
-    <div class="core-zone">
-
-        <div class="core-ring-1"></div>
-        <div class="core-ring-2"></div>
-        <div class="core-ring-3"></div>
-
-        <div class="core">
-
-            <div>
-
-                <div class="core-title">
-                    BOOKIEOS
-                </div>
-
-                <div class="core-small">
-                    CENTRAL INTELLIGENCE
-                </div>
-
-                <div class="core-online">
-                    ● CORE ONLINE
-                </div>
-
-            </div>
-
-        </div>
-
-    </div>
-
-
-
-    <div class="bottom-status">
-
-        BOOKIECO SCIENTIFIC OPERATIONS HQ
-        ·
-        <span>2 AGENTS ACTIVE</span>
-        ·
-        MARKETING NETWORK
-
-    </div>
+<div class="title">
+
+<span class="yellow">
+◉ BOOKIE
+</span>
+
+<span class="green">
+OS
+</span>
 
 </div>
 
 
-<script>
+<div class="sub">
 
-function updateClock() {
+BOOKIECO ARTIFICIAL INTELLIGENCE OPERATIONS HQ
 
-    const now = new Date();
+</div>
 
-    document.getElementById("clock").innerText =
-        now.toLocaleTimeString(
-            "en-GB",
-            {
-                hour12: false
-            }
-        );
-}
 
-updateClock();
 
-setInterval(
-    updateClock,
-    1000
-);
+<div class="connector c1"></div>
+<div class="connector c2"></div>
+<div class="connector c3"></div>
 
-</script>
+<div class="connector c4"></div>
+<div class="connector c5"></div>
+<div class="connector c6"></div>
 
+
+
+<div class="agent online a1">
+
+<div class="agent-title">
+🔎 WEEKLY MATCH SCOUT
+</div>
+
+<div class="agent-job">
+Scans upcoming sport events and identifies the strongest marketing opportunities.
+</div>
+
+<div class="online-status">
+● ONLINE
+</div>
+
+</div>
+
+
+
+<div class="agent online a2">
+
+<div class="agent-title">
+🧠 BET RESEARCHER
+</div>
+
+<div class="agent-job">
+Analyses teams, players, form, statistics and betting concepts.
+</div>
+
+<div class="online-status">
+● ONLINE · AUTO
+</div>
+
+</div>
+
+
+
+<div class="agent a3">
+
+<div class="agent-title">
+📣 MARKETING MANAGER
+</div>
+
+<div class="agent-job">
+Creates the final BookieCo weekly marketing plan.
+</div>
+
+<div class="planned-status">
+COMING NEXT
+</div>
+
+</div>
+
+
+
+<div class="agent a4">
+
+<div class="agent-title">
+🎁 PROMOTION SELECTOR
+</div>
+
+<div class="agent-job">
+Selects the best BookieCo promotion for each event.
+</div>
+
+<div class="planned-status">
+PLANNED
+</div>
+
+</div>
+
+
+
+<div class="agent a5">
+
+<div class="agent-title">
+🎨 CREATIVE DIRECTOR
+</div>
+
+<div class="agent-job">
+Controls templates, graphics and creative direction.
+</div>
+
+<div class="planned-status">
+PLANNED
+</div>
+
+</div>
+
+
+
+<div class="agent a6">
+
+<div class="agent-title">
+✍️ SOCIAL MEDIA WRITER
+</div>
+
+<div class="agent-job">
+Creates headlines, captions and social media copy.
+</div>
+
+<div class="planned-status">
+PLANNED
+</div>
+
+</div>
+
+
+
+<div class="core-wrap">
+
+<div class="ring1"></div>
+<div class="ring2"></div>
+<div class="ring3"></div>
+
+
+<div class="core">
+
+<div>
+
+<div class="core-name">
+BOOKIEOS
+</div>
+
+<div class="core-status">
+● CENTRAL CORE ONLINE
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+
+</div>
 
 </body>
+
 </html>
 """
 
 
 components.html(
-    hq_html,
-    height=640,
+    hq,
+    height=625,
     scrolling=False
 )
 
 
 # =========================================================
-# COMMAND TERMINAL
+# COMMAND CONSOLE
 # =========================================================
 
-left_space, command, right_space = st.columns(
+center_left, center, center_right = st.columns(
     [0.12, 1, 0.12]
 )
 
 
-with command:
+with center:
 
     with st.container(border=True):
 
         st.subheader(
-            "◉ BOOKIEOS COMMAND TERMINAL"
+            "◉ BOOKIEOS COMMAND CONSOLE"
         )
 
         st.caption(
-            "Issue a command to the BookieCo AI network."
+            "Command the BookieCo AI network."
         )
 
 
-        # =================================================
-        # VOICE
-        # =================================================
-
         voice_prompt = None
+
 
         audio = st.audio_input(
             "🎤 Voice Command"
@@ -916,12 +1037,13 @@ with command:
                     )
                 )
 
-                voice_prompt = transcription.text
+                voice_prompt = (
+                    transcription.text
+                )
 
                 st.info(
                     f"🎙️ {voice_prompt}"
                 )
-
 
             except Exception as e:
 
@@ -930,23 +1052,16 @@ with command:
                 )
 
 
-        # =================================================
-        # CHAT
-        # =================================================
-
         text_prompt = st.chat_input(
-            "Enter command..."
+            "Ask BookieOS..."
         )
+
 
         user_prompt = (
             text_prompt
             or voice_prompt
         )
 
-
-        # =================================================
-        # PROCESS
-        # =================================================
 
         if user_prompt:
 
@@ -958,7 +1073,6 @@ with command:
 
 
             with st.chat_message("assistant"):
-
 
                 lower_prompt = (
                     user_prompt.lower()
@@ -997,20 +1111,12 @@ with command:
                 )
 
 
-                # =========================================
-                # AGENT WORKFLOW
-                # =========================================
-
                 if use_scout:
 
                     try:
 
                         st.markdown(
                             "### 🔎 WEEKLY MATCH SCOUT"
-                        )
-
-                        st.caption(
-                            "Agent activated · researching live sporting schedule"
                         )
 
 
@@ -1037,10 +1143,6 @@ with command:
                             "### 🧠 BET RESEARCHER"
                         )
 
-                        st.caption(
-                            "Agent activated · analysing Scout intelligence"
-                        )
-
 
                         researcher_task = f"""
 The Weekly Match Scout produced the report below.
@@ -1065,7 +1167,7 @@ We want interesting betting ideas for BookieCo marketing.
 
 Avoid boring extremely safe selections.
 
-Interesting ideas can include:
+Interesting ideas may include:
 
 - Player to score
 - Player to score + team win
@@ -1079,17 +1181,11 @@ Interesting ideas can include:
 - Cards
 - Logical bet-builder combinations
 
-Do NOT make combinations complicated just for the sake of it.
-
-IMPORTANT:
-
 Do NOT provide betting odds.
 
 Do NOT invent BookieCo odds.
 
-Do NOT claim that a betting market is available at BookieCo.
-
-Market availability will be verified by another system in the future.
+Do NOT claim a market is available at BookieCo.
 
 If an idea is weak, suggest a better betting angle.
 
@@ -1118,13 +1214,9 @@ SCOUT REPORT:
                     except Exception as e:
 
                         st.error(
-                            f"Agent system error: {e}"
+                            f"Agent error: {e}"
                         )
 
-
-                # =========================================
-                # NORMAL BOOKIEOS
-                # =========================================
 
                 else:
 
@@ -1138,21 +1230,13 @@ SCOUT REPORT:
                                 instructions="""
 You are BookieOS.
 
-You are the central artificial intelligence
-operating system for BookieCo.
-
-BookieCo is a retail betting company in Cyprus.
+You are the central AI operating system for
+BookieCo, a retail betting company in Cyprus.
 
 ACTIVE AGENTS:
 
-1. Weekly Match Scout
-2. Bet Researcher
-
-Weekly Match Scout researches upcoming sporting
-events for BookieCo marketing.
-
-Bet Researcher researches teams, players,
-statistics and proposed betting concepts.
+Weekly Match Scout
+Bet Researcher
 
 PLANNED AGENTS:
 
@@ -1161,19 +1245,19 @@ Promotion Selector
 Creative Director
 Social Media Writer
 
-BookieOS currently does NOT have access to
-BookieCo live markets or odds.
+BookieOS does not currently have access to
+BookieCo live betting odds.
 
 Never invent odds.
 
-Never claim that a betting market exists at
-BookieCo unless it has been verified.
+Never claim a BookieCo market is available
+unless it has been verified.
 
-If the user speaks Greek, answer in Greek.
+Answer Greek in Greek.
 
-If the user speaks English, answer in English.
+Answer English in English.
 
-Keep responses concise and practical.
+Keep responses concise.
 """,
 
                                 input=user_prompt
@@ -1191,80 +1275,3 @@ Keep responses concise and practical.
                         st.error(
                             f"BookieOS error: {e}"
                         )
-
-
-# =========================================================
-# LOWER HQ PANELS
-# =========================================================
-
-st.write("")
-
-
-p1, p2, p3 = st.columns(3)
-
-
-with p1:
-
-    with st.container(border=True):
-
-        st.markdown(
-            "### 🟢 ACTIVE SYSTEMS"
-        )
-
-        st.write(
-            "**Weekly Match Scout**"
-        )
-
-        st.caption(
-            "ONLINE"
-        )
-
-        st.write(
-            "**Bet Researcher**"
-        )
-
-        st.caption(
-            "ONLINE · AUTOMATIC"
-        )
-
-
-with p2:
-
-    with st.container(border=True):
-
-        st.markdown(
-            "### 📡 CURRENT NETWORK"
-        )
-
-        st.write(
-            "**Department:** Marketing"
-        )
-
-        st.write(
-            "**Agents Active:** 2"
-        )
-
-        st.write(
-            "**BookieOS Core:** ONLINE"
-        )
-
-
-with p3:
-
-    with st.container(border=True):
-
-        st.markdown(
-            "### 🧪 DEVELOPMENT"
-        )
-
-        st.write(
-            "**Next:** Marketing Manager"
-        )
-
-        st.write(
-            "**Later:** Promotions + Creative"
-        )
-
-        st.write(
-            "**Future:** Risk · AML · Operations"
-        )
