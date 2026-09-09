@@ -1,10 +1,14 @@
 import streamlit as st
+from openai import OpenAI
 
 st.set_page_config(
     page_title="BookieOS",
     page_icon="🤖",
     layout="wide"
 )
+
+# Connect BookieOS to OpenAI
+client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
 
 # ---------- HEADER ----------
 st.title("◉ BOOKIEOS")
@@ -23,7 +27,6 @@ with main:
         "BookieOS is online. What would you like me to do?"
     )
 
-    # Conversation memory
     if "messages" not in st.session_state:
         st.session_state.messages = []
 
@@ -41,19 +44,48 @@ with main:
         with st.chat_message("user"):
             st.write(prompt)
 
-        # Temporary demo response
-        response = (
-            "Understood. This is currently the BookieOS demo interface. "
-            "My AI brain and specialist agents will be connected next."
-        )
+        # Send the conversation to the real AI
+        try:
+            response = client.responses.create(
+                model="gpt-5.6-luna",
+                instructions="""
+You are BookieOS, the internal AI operating system for BookieCo.
 
-        with st.chat_message("assistant"):
-            st.write(response)
+You coordinate specialist AI agents for the company.
+
+Current Marketing agents:
+- Marketing Manager
+- Weekly Match Scout
+- Bet Researcher
+- Promotion Selector
+
+Be concise, professional and helpful.
+
+IMPORTANT:
+The specialist agents are not connected yet.
+Never pretend that an agent has performed work when it has not.
+""",
+                input=[
+                    {
+                        "role": message["role"],
+                        "content": message["content"]
+                    }
+                    for message in st.session_state.messages
+                ]
+            )
+
+            answer = response.output_text
+
+        except Exception as e:
+            answer = "BookieOS could not contact the AI service. Error: " + str(e)
 
         st.session_state.messages.append({
             "role": "assistant",
-            "content": response
+            "content": answer
         })
+
+        with st.chat_message("assistant"):
+            st.write(answer)
 
 
 with agents:
