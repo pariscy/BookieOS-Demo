@@ -14,24 +14,17 @@ st.set_page_config(
 )
 
 
-# ---------- OPENAI ----------
 client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
 
 
-# ---------- HEADER ----------
 st.title("◉ BOOKIEOS")
 st.caption("BookieCo Artificial Intelligence Operating System")
 
 st.divider()
 
 
-# ---------- LAYOUT ----------
 main, agents = st.columns([2.3, 1])
 
-
-# =========================================================
-# MAIN BOOKIEOS AREA
-# =========================================================
 
 with main:
 
@@ -43,8 +36,6 @@ with main:
     )
 
 
-    # ---------- CHAT MEMORY ----------
-
     if "messages" not in st.session_state:
         st.session_state.messages = []
 
@@ -54,8 +45,6 @@ with main:
         with st.chat_message(message["role"]):
             st.write(message["content"])
 
-
-    # ---------- VOICE INPUT ----------
 
     audio = st.audio_input("🎤 Talk to BookieOS")
 
@@ -84,8 +73,6 @@ with main:
             )
 
 
-    # ---------- TEXT INPUT ----------
-
     prompt = st.chat_input(
         "Ask BookieOS anything..."
     )
@@ -94,8 +81,6 @@ with main:
     if voice_prompt:
         prompt = voice_prompt
 
-
-    # ---------- PROCESS REQUEST ----------
 
     if prompt:
 
@@ -113,8 +98,6 @@ with main:
 
             prompt_lower = prompt.lower()
 
-
-            # ---------- MATCH SCOUT ROUTING ----------
 
             scout_words = [
 
@@ -134,8 +117,6 @@ with main:
                 "europa league",
                 "conference league",
 
-                # Greek
-
                 "βρες αγώνες",
                 "βρες μου αγώνες",
                 "καλύτερους αγώνες",
@@ -152,15 +133,8 @@ with main:
             )
 
 
-            # =====================================================
-            # WEEKLY MATCH SCOUT
-            # THEN AUTOMATIC BET RESEARCHER
-            # =====================================================
-
             if use_scout:
 
-
-                # ---------- AGENT 1 ----------
 
                 with st.spinner(
                     "⚽ Weekly Match Scout is researching..."
@@ -171,8 +145,6 @@ with main:
                         prompt
                     )
 
-
-                # ---------- AGENT 2 ----------
 
                 with st.spinner(
                     "🔎 Bet Researcher is automatically analysing the recommendations..."
@@ -240,22 +212,14 @@ Do not require the user to ask you about each match individually.
                     )
 
 
-                # ---------- COMBINED RESULT ----------
-
                 answer = (
                     "⚽ **Weekly Match Scout report**\n\n"
                     + scout_result
-                    + "\n\n"
-                    + "---"
-                    + "\n\n"
+                    + "\n\n---\n\n"
                     + "🔎 **Automatic Bet Researcher analysis**\n\n"
                     + researcher_result
                 )
 
-
-            # =====================================================
-            # NORMAL BOOKIEOS
-            # =====================================================
 
             else:
 
@@ -268,12 +232,9 @@ You are BookieOS, the internal AI operating system for BookieCo.
 
 Your job is to coordinate specialist AI agents and communicate with the user.
 
-
 CONNECTED AGENTS:
 
-1. WEEKLY MATCH SCOUT
-
-The Weekly Match Scout:
+1. Weekly Match Scout
 - Researches upcoming sporting events.
 - Creates weekly marketing recommendations.
 - Prioritises the Cyprus audience.
@@ -281,16 +242,12 @@ The Weekly Match Scout:
 - Checks Formula 1.
 - Proposes interesting football betting markets.
 
-
-2. BET RESEARCHER
-
-The Bet Researcher:
+2. Bet Researcher
 - Automatically receives the Weekly Match Scout report.
 - Analyses every proposed football betting market.
 - Researches whether the betting angle makes sense.
 - Looks for more interesting alternatives when a proposed bet is too low.
 - Will eventually verify BookieCo's real markets and odds.
-
 
 AUTOMATIC WORKFLOW:
 
@@ -301,10 +258,8 @@ User
 → BookieOS
 → User
 
-
 The user does NOT need to manually ask the Bet Researcher
 to analyse every match.
-
 
 BOOKIECO DATA:
 
@@ -316,12 +271,10 @@ Until that connection has been successfully verified:
 - Never claim that a market definitely exists at BookieCo.
 - Never invent market availability.
 
-
 NOT YET CONNECTED:
 
 - Marketing Manager
 - Promotion Selector
-
 
 LANGUAGE:
 
@@ -330,7 +283,6 @@ The user may communicate in English or Greek.
 If the user speaks Greek, respond in Greek.
 
 If the user speaks English, respond in English.
-
 
 Be concise, professional and helpful.
 """,
@@ -366,68 +318,30 @@ Be concise, professional and helpful.
             st.write(answer)
 
 
-# =========================================================
-# AGENTS PANEL
-# =========================================================
-
 with agents:
 
     st.subheader("⚡ LIVE AGENTS")
 
 
-    # ---------- MARKETING MANAGER ----------
-
-    st.markdown(
-        "**🤖 Marketing Manager**"
-    )
-
-    st.warning(
-        "● NOT CONNECTED"
-    )
+    st.markdown("**🤖 Marketing Manager**")
+    st.warning("● NOT CONNECTED")
 
 
-    # ---------- WEEKLY MATCH SCOUT ----------
-
-    st.markdown(
-        "**⚽ Weekly Match Scout**"
-    )
-
-    st.success(
-        "● CONNECTED"
-    )
+    st.markdown("**⚽ Weekly Match Scout**")
+    st.success("● CONNECTED")
 
 
-    # ---------- BET RESEARCHER ----------
-
-    st.markdown(
-        "**🔎 Bet Researcher**"
-    )
-
-    st.success(
-        "● CONNECTED - AUTO"
-    )
+    st.markdown("**🔎 Bet Researcher**")
+    st.success("● CONNECTED - AUTO")
 
 
-    # ---------- PROMOTION SELECTOR ----------
+    st.markdown("**📢 Promotion Selector**")
+    st.warning("● NOT CONNECTED")
 
-    st.markdown(
-        "**📢 Promotion Selector**"
-    )
-
-    st.warning(
-        "● NOT CONNECTED"
-    )
-
-
-    # =====================================================
-    # BOOKIECO LIVE DATA TEST
-    # =====================================================
 
     st.divider()
 
-    st.markdown(
-        "**📡 BookieCo Market Feed**"
-    )
+    st.markdown("**📡 BookieCo Market Feed**")
 
 
     if st.button(
@@ -487,6 +401,44 @@ with agents:
             )
 
 
+            debug = result.get(
+                "debug",
+                {}
+            )
+
+            st.write(
+                "Messages received:",
+                debug.get(
+                    "messages_received",
+                    0
+                )
+            )
+
+            st.write(
+                "First message type:",
+                debug.get(
+                    "first_message_type",
+                    "Unknown"
+                )
+            )
+
+            st.write(
+                "First message size:",
+                debug.get(
+                    "first_message_size",
+                    0
+                )
+            )
+
+            st.write(
+                "First message keys:",
+                debug.get(
+                    "first_message_keys",
+                    []
+                )
+            )
+
+
         else:
 
             st.error(
@@ -500,8 +452,6 @@ with agents:
                 )
             )
 
-
-    # ---------- SYSTEM STATUS ----------
 
     st.divider()
 
