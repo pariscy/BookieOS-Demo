@@ -34,6 +34,9 @@ if "competitor_report" not in st.session_state:
 if "sports_calendar_report" not in st.session_state:
     st.session_state.sports_calendar_report = None
 
+if "calendar_promo_ideas" not in st.session_state:
+    st.session_state.calendar_promo_ideas = None
+
 
 # =========================================================
 # HEADER
@@ -55,11 +58,6 @@ with main_column:
 
     st.subheader("BookieOS")
     st.caption("Ask BookieOS in English or Greek.")
-
-
-    # =====================================================
-    # VOICE
-    # =====================================================
 
     voice_prompt = None
 
@@ -91,20 +89,12 @@ with main_column:
             )
 
 
-    # =====================================================
-    # TEXT
-    # =====================================================
-
     text_prompt = st.chat_input(
         "Ask BookieOS..."
     )
 
     user_prompt = text_prompt or voice_prompt
 
-
-    # =====================================================
-    # REQUEST
-    # =====================================================
 
     if user_prompt:
 
@@ -115,7 +105,6 @@ with main_column:
         with st.chat_message("assistant"):
 
             lower_prompt = user_prompt.lower()
-
 
             scout_words = [
 
@@ -151,16 +140,11 @@ with main_column:
 
             # =================================================
             # WEEKLY MARKETING WORKFLOW
-            # Scout → Researcher → Marketing Manager
             # =================================================
 
             if use_scout:
 
                 try:
-
-                    # =========================================
-                    # WEEKLY MATCH SCOUT
-                    # =========================================
 
                     with st.spinner(
                         "🔎 Weekly Match Scout is researching..."
@@ -182,10 +166,6 @@ with main_column:
 
                     st.divider()
 
-
-                    # =========================================
-                    # BET RESEARCHER
-                    # =========================================
 
                     with st.spinner(
                         "🧠 Bet Researcher is analysing..."
@@ -267,10 +247,6 @@ SCOUT REPORT:
                     st.divider()
 
 
-                    # =========================================
-                    # MARKETING MANAGER
-                    # =========================================
-
                     with st.spinner(
                         "📣 Marketing Manager is building the weekly plan..."
                     ):
@@ -323,36 +299,31 @@ a retail betting company in Cyprus.
 AUTOMATIC MARKETING WORKFLOW:
 
 1. Weekly Match Scout
-
-Finds strong upcoming sporting events for
-BookieCo marketing.
-
 2. Bet Researcher
-
-Researches teams, players, statistics and proposed
-football betting ideas.
-
 3. Marketing Manager
-
-Decides what BookieCo should actually market.
 
 INDEPENDENT MANUAL AGENTS:
 
 4. Sports News Monitor
 
-Checks important current sports developments including
-injuries, suspensions, doubtful players, manager changes,
-postponements and major squad news.
+Checks important current sports developments.
 
 5. Competitor Watch
 
-Checks current public marketing activity from betting
-competitors relevant to Cyprus.
+Checks current public marketing activity from
+betting competitors relevant to Cyprus.
 
 6. Sports Calendar
 
 Looks approximately 90 days ahead for major sporting
 events that BookieCo should prepare marketing for.
+
+The Sports Calendar also has an OPTIONAL Promo Ideas tool.
+
+Promo Ideas are creative concepts only.
+
+They are NOT existing BookieCo promotions and must
+never be presented as approved or active promotions.
 
 PLANNED AGENTS:
 
@@ -685,6 +656,10 @@ If there are no important developments, say so clearly.
                     )
                 )
 
+                # Clear old promo ideas whenever a new
+                # calendar is generated.
+                st.session_state.calendar_promo_ideas = None
+
 
         except Exception as e:
 
@@ -706,6 +681,185 @@ If there are no important developments, say so clearly.
             st.write(
                 st.session_state.sports_calendar_report
             )
+
+
+        # =================================================
+        # OPTIONAL PROMO IDEAS
+        # =================================================
+
+        if st.button(
+            "💡 Create Promo Ideas",
+            use_container_width=True
+        ):
+
+            try:
+
+                with st.spinner(
+                    "Creating special-event promo ideas..."
+                ):
+
+                    promo_task = f"""
+You are helping BookieCo brainstorm SPECIAL EVENT
+promotion concepts.
+
+BookieCo is a retail betting company in Cyprus.
+
+Below is a 90-Day Sports Calendar created using
+current sports research.
+
+Your job is to identify ONLY the events that genuinely
+deserve a special BookieCo campaign or promotion.
+
+Do NOT create promotions for every event.
+
+Special promotions should be reserved for major
+opportunities.
+
+Examples could include:
+
+- major European football finals
+- major Cyprus football opportunities
+- major Greek football opportunities
+- major international matches
+- Formula 1 showcase weekends
+- EuroLeague Final Four
+- major tournament stages
+- other exceptional sporting occasions
+
+Be creative.
+
+You may invent NEW promotional concepts.
+
+However:
+
+EVERY promotion you create is ONLY A CONCEPT.
+
+It is NOT an active BookieCo promotion.
+
+It is NOT approved.
+
+It has NOT been checked against BookieCo rules.
+
+It has NOT been checked against Cyprus advertising
+or betting regulations.
+
+It must therefore be clearly labelled:
+
+⚠️ CONCEPT ONLY — NEEDS REVIEW
+
+Do NOT invent BookieCo odds.
+
+Do NOT claim any market currently exists at BookieCo.
+
+Do NOT copy competitor promotions.
+
+Think about concepts that could be exciting for
+retail betting customers in Cyprus.
+
+Possible types of ideas include:
+
+- event-specific betting promotions
+- prediction challenges
+- score-related concepts
+- goal-related concepts
+- player-related concepts
+- bet-builder concepts
+- race-weekend concepts
+- tournament concepts
+- multi-day special-event campaigns
+- shop-focused activations
+- creative sports marketing mechanics
+
+The concept does NOT need to be limited to these examples.
+
+For every selected opportunity give:
+
+EVENT:
+
+DATE:
+
+WHY THIS EVENT DESERVES A SPECIAL PROMO:
+
+PROMO NAME:
+
+PROMO CONCEPT:
+
+HOW IT WOULD WORK:
+
+WHY CUSTOMERS MAY FIND IT INTERESTING:
+
+MARKETING POTENTIAL:
+HIGH / MEDIUM / LOW
+
+RECOMMENDED CONTENT:
+
+Choose any that make sense:
+
+- Instagram/Facebook Post
+- Story
+- Reel
+
+PREPARATION TIME:
+
+STATUS:
+⚠️ CONCEPT ONLY — NEEDS REVIEW
+
+At the end create:
+
+SPECIAL EVENT PROMO SHORTLIST
+
+Choose the BEST 3 concepts from the entire calendar.
+
+Rank them:
+
+🥇
+🥈
+🥉
+
+Quality is much more important than quantity.
+
+
+90-DAY SPORTS CALENDAR:
+
+{st.session_state.sports_calendar_report}
+"""
+
+
+                    promo_response = client.responses.create(
+                        model="gpt-5.6-luna",
+                        input=promo_task
+                    )
+
+
+                    st.session_state.calendar_promo_ideas = (
+                        promo_response.output_text
+                    )
+
+
+            except Exception as e:
+
+                st.error(
+                    f"Promo Ideas error: {e}"
+                )
+
+
+        if st.session_state.calendar_promo_ideas:
+
+            with st.container(
+                border=True
+            ):
+
+                st.markdown(
+                    "### 💡 Special Event Promo Ideas"
+                )
+
+                st.warning(
+                    "Concepts only — these are not approved BookieCo promotions."
+                )
+
+                st.write(
+                    st.session_state.calendar_promo_ideas
+                )
 
 
     else:
