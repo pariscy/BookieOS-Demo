@@ -344,7 +344,7 @@ with agents:
     st.markdown("**📡 BookieCo Market Feed**")
 
 
-    if st.button(
+      if st.button(
         "🧪 Test BookieCo Live Feed"
     ):
 
@@ -401,42 +401,68 @@ with agents:
             )
 
 
-            debug = result.get(
-                "debug",
-                {}
+            matches = result.get(
+                "matches",
+                []
             )
 
-            st.write(
-                "Messages received:",
-                debug.get(
-                    "messages_received",
-                    0
-                )
-            )
 
-            st.write(
-                "First message type:",
-                debug.get(
-                    "first_message_type",
-                    "Unknown"
-                )
-            )
+            if matches:
 
-            st.write(
-                "First message size:",
-                debug.get(
-                    "first_message_size",
-                    0
+                st.markdown(
+                    "### ⚽ Matches found"
                 )
-            )
 
-            st.write(
-                "First message keys:",
-                debug.get(
-                    "first_message_keys",
-                    []
+
+                for match in matches:
+
+                    competitors = match.get(
+                        "competitors",
+                        []
+                    )
+
+                    match_id = match.get(
+                        "match_id"
+                    )
+
+                    number_of_markets = match.get(
+                        "number_of_markets"
+                    )
+
+
+                    if len(competitors) >= 2:
+
+                        match_name = (
+                            str(competitors[0])
+                            + " vs "
+                            + str(competitors[1])
+                        )
+
+                    else:
+
+                        match_name = str(
+                            competitors
+                        )
+
+
+                    st.write(
+                        "⚽ "
+                        + match_name
+                    )
+
+                    st.caption(
+                        "Match ID: "
+                        + str(match_id)
+                        + " | Markets: "
+                        + str(number_of_markets)
+                    )
+
+
+            else:
+
+                st.warning(
+                    "Connected, but no matches were found."
                 )
-            )
 
 
         else:
@@ -451,7 +477,6 @@ with agents:
                     "Unknown error"
                 )
             )
-
 
     st.divider()
 
