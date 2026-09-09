@@ -19,332 +19,146 @@ st.set_page_config(
 
 
 # =========================================================
-# GLOBAL SCI-FI BACKGROUND
+# STREAMLIT DESIGN
 # =========================================================
 
 st.markdown(
     """
 <style>
 
-html,
-body,
+html, body, .stApp {
+    background: #030605 !important;
+}
+
 .stApp {
-    background: #050807 !important;
+    background:
+        radial-gradient(circle at 50% 10%,
+        rgba(241,196,0,.07), transparent 32%),
+
+        radial-gradient(circle at 10% 40%,
+        rgba(68,136,62,.08), transparent 25%),
+
+        radial-gradient(circle at 90% 40%,
+        rgba(0,180,110,.05), transparent 25%),
+
+        linear-gradient(180deg,#07100b,#020403) !important;
 }
 
 header {
     background: transparent !important;
 }
 
-#MainMenu,
-footer {
+#MainMenu, footer {
     visibility: hidden;
 }
 
 .block-container {
-    max-width: 1700px;
-    padding-top: 0.5rem;
+    max-width: 1650px;
+    padding-top: .5rem;
     padding-bottom: 4rem;
 }
 
 
-/* ==========================================
-   SCI-FI SPACE BACKGROUND
-========================================== */
-
-.stApp::before {
-    content: "";
-    position: fixed;
-    inset: 0;
-    pointer-events: none;
-    z-index: 0;
-
-    background:
-
-        radial-gradient(
-            circle at 50% 20%,
-            rgba(241,196,0,.12),
-            transparent 28%
-        ),
-
-        radial-gradient(
-            circle at 15% 45%,
-            rgba(68,136,62,.10),
-            transparent 25%
-        ),
-
-        radial-gradient(
-            circle at 85% 60%,
-            rgba(0,255,170,.05),
-            transparent 25%
-        ),
-
-        radial-gradient(
-            circle at 20% 10%,
-            rgba(255,255,255,.8) 0px,
-            transparent 1px
-        ),
-
-        radial-gradient(
-            circle at 75% 15%,
-            rgba(255,255,255,.6) 0px,
-            transparent 1px
-        ),
-
-        radial-gradient(
-            circle at 40% 70%,
-            rgba(255,255,255,.5) 0px,
-            transparent 1px
-        ),
-
-        linear-gradient(
-            180deg,
-            #07100b,
-            #030504
-        );
-
-    background-size:
-        auto,
-        auto,
-        auto,
-        170px 170px,
-        220px 220px,
-        260px 260px,
-        auto;
-}
-
-
-/* ==========================================
-   FUTURISTIC GRID
-========================================== */
+/* SCI FI FLOOR GRID */
 
 .stApp::after {
+
     content: "";
     position: fixed;
 
     left: -10%;
     right: -10%;
     bottom: -25%;
-    height: 60%;
+
+    height: 55%;
 
     pointer-events: none;
 
     background-image:
-        linear-gradient(
-            rgba(241,196,0,.07) 1px,
-            transparent 1px
-        ),
-        linear-gradient(
-            90deg,
-            rgba(68,136,62,.07) 1px,
-            transparent 1px
-        );
 
-    background-size: 55px 55px;
+        linear-gradient(
+        rgba(241,196,0,.06) 1px,
+        transparent 1px),
+
+        linear-gradient(
+        90deg,
+        rgba(68,136,62,.06) 1px,
+        transparent 1px);
+
+    background-size: 60px 60px;
 
     transform:
-        perspective(450px)
-        rotateX(62deg);
+        perspective(500px)
+        rotateX(65deg);
 
     transform-origin: center top;
-
-    mask-image:
-        linear-gradient(
-            to bottom,
-            transparent,
-            black 35%,
-            black
-        );
 
     z-index: 0;
 }
 
 
-/* ==========================================
-   KEEP CONTENT ABOVE BACKGROUND
-========================================== */
-
-[data-testid="stAppViewContainer"] > .main {
-    position: relative;
-    z-index: 2;
-}
-
-
-/* ==========================================
-   FLOATING SPORTS
-========================================== */
-
-.sports-space {
-    position: fixed;
-    inset: 0;
-    pointer-events: none;
-    overflow: hidden;
-    z-index: 1;
-}
-
-.sport {
-    position: absolute;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    width: 65px;
-    height: 65px;
-
-    border-radius: 50%;
-
-    font-size: 28px;
-
-    background:
-        radial-gradient(
-            circle,
-            rgba(241,196,0,.15),
-            rgba(9,16,11,.55)
-        );
-
-    border:
-        1px solid rgba(241,196,0,.25);
-
-    box-shadow:
-        0 0 20px rgba(241,196,0,.10),
-        inset 0 0 20px rgba(68,136,62,.08);
-
-    backdrop-filter: blur(5px);
-
-    animation:
-        floatSport 8s ease-in-out infinite;
-}
-
-.s1 {
-    left: 3%;
-    top: 21%;
-}
-
-.s2 {
-    right: 4%;
-    top: 25%;
-    animation-delay: -2s;
-}
-
-.s3 {
-    left: 8%;
-    top: 68%;
-    animation-delay: -4s;
-}
-
-.s4 {
-    right: 7%;
-    top: 70%;
-    animation-delay: -6s;
-}
-
-.s5 {
-    right: 20%;
-    top: 12%;
-    width: 52px;
-    height: 52px;
-    font-size: 23px;
-    animation-delay: -3s;
-}
-
-@keyframes floatSport {
-
-    0%,100% {
-        transform:
-            translateY(0px)
-            rotate(0deg);
-    }
-
-    50% {
-        transform:
-            translateY(-22px)
-            rotate(8deg);
-    }
-}
-
-
-/* ==========================================
-   STREAMLIT CONTAINERS
-========================================== */
+/* REAL STREAMLIT UI */
 
 [data-testid="stVerticalBlockBorderWrapper"] {
+
     background:
         linear-gradient(
-            145deg,
-            rgba(11,17,13,.90),
-            rgba(7,10,8,.87)
-        );
+        145deg,
+        rgba(10,16,12,.94),
+        rgba(5,9,6,.94));
 
     border:
-        1px solid rgba(241,196,0,.20) !important;
+        1px solid rgba(241,196,0,.22) !important;
 
     border-radius: 18px;
 
-    backdrop-filter: blur(12px);
-
     box-shadow:
-        0 0 30px rgba(0,0,0,.35),
-        inset 0 0 30px rgba(68,136,62,.025);
+        0 0 35px rgba(0,0,0,.5);
+
+    backdrop-filter: blur(12px);
 }
 
 
 [data-testid="stChatMessage"] {
-    background: rgba(10,15,11,.92);
-    border: 1px solid rgba(241,196,0,.12);
+
+    background:
+        rgba(8,14,10,.94);
+
+    border:
+        1px solid rgba(241,196,0,.13);
+
     border-radius: 15px;
 }
 
 
 [data-testid="stChatInput"] {
-    background: rgba(7,11,8,.95);
     border-radius: 14px;
 }
 
 
 .stButton > button {
+
     background:
         linear-gradient(
-            135deg,
-            #F1C400,
-            #C9A500
-        );
+        135deg,
+        #F1C400,
+        #C9A500);
 
     color: #10120f;
 
     border: none;
 
-    border-radius: 10px;
-
     font-weight: 900;
+
+    border-radius: 10px;
+}
+
+
+h1,h2,h3 {
+    color: #F5F7F5;
 }
 
 </style>
-
-
-<div class="sports-space">
-
-    <div class="sport s1">
-        ⚽
-    </div>
-
-    <div class="sport s2">
-        🏀
-    </div>
-
-    <div class="sport s3">
-        🏎️
-    </div>
-
-    <div class="sport s4">
-        🎾
-    </div>
-
-    <div class="sport s5">
-        🏆
-    </div>
-
-</div>
 """,
     unsafe_allow_html=True
 )
@@ -360,10 +174,10 @@ client = OpenAI(
 
 
 # =========================================================
-# SCI-FI HQ VISUAL
+# BOOKIEOS HQ
 # =========================================================
 
-hq = """
+hq_html = """
 <!DOCTYPE html>
 
 <html>
@@ -377,53 +191,117 @@ hq = """
 }
 
 body {
+
     margin: 0;
-    overflow: hidden;
+
     background: transparent;
-    font-family: Arial, sans-serif;
+
     color: white;
+
+    font-family:
+        Arial,
+        Helvetica,
+        sans-serif;
+
+    overflow: hidden;
 }
+
+
+/* ======================================================
+   HQ ROOM
+====================================================== */
 
 .hq {
 
     position: relative;
 
-    height: 610px;
+    width: 100%;
+    height: 650px;
 
     overflow: hidden;
 
-    border-radius: 24px;
+    border-radius: 25px;
 
     border:
-        1px solid rgba(241,196,0,.25);
+        1px solid rgba(241,196,0,.28);
 
     background:
 
         radial-gradient(
-            circle at center,
-            rgba(241,196,0,.08),
-            transparent 32%
+            circle at 50% 48%,
+            rgba(241,196,0,.10),
+            transparent 25%
+        ),
+
+        radial-gradient(
+            circle at 50% 48%,
+            rgba(68,136,62,.08),
+            transparent 42%
+        ),
+
+        repeating-linear-gradient(
+            90deg,
+            rgba(241,196,0,.025) 0px,
+            rgba(241,196,0,.025) 1px,
+            transparent 1px,
+            transparent 80px
+        ),
+
+        repeating-linear-gradient(
+            0deg,
+            rgba(68,136,62,.02) 0px,
+            rgba(68,136,62,.02) 1px,
+            transparent 1px,
+            transparent 80px
         ),
 
         linear-gradient(
-            rgba(5,10,7,.88),
-            rgba(3,6,4,.96)
+            180deg,
+            #07100b,
+            #020503
         );
 
     box-shadow:
-        inset 0 0 100px rgba(0,0,0,.85),
-        0 0 45px rgba(0,0,0,.55);
+        inset 0 0 120px #000,
+        0 0 50px rgba(0,0,0,.7);
 }
 
 
-/* HEADER */
+/* STARS */
 
-.title {
+.stars {
 
     position: absolute;
 
-    top: 20px;
-    left: 30px;
+    inset: 0;
+
+    opacity: .35;
+
+    background-image:
+
+        radial-gradient(
+            white 1px,
+            transparent 1px
+        );
+
+    background-size:
+        95px 95px;
+
+    animation:
+        starsMove 30s linear infinite;
+}
+
+
+/* ======================================================
+   TOP BAR
+====================================================== */
+
+.logo {
+
+    position: absolute;
+
+    top: 24px;
+    left: 32px;
 
     font-size: 30px;
 
@@ -437,27 +315,58 @@ body {
 }
 
 .green {
-    color: #59BE52;
+    color: #55C650;
 }
 
-.sub {
+.subtitle {
 
     position: absolute;
 
-    top: 60px;
-    left: 32px;
+    top: 65px;
+    left: 34px;
 
-    color: #69766D;
-
-    font-size: 10px;
+    font-size: 9px;
 
     letter-spacing: 2px;
+
+    color: #718078;
 }
 
 
-/* CENTRAL CORE */
+.location {
 
-.core-wrap {
+    position: absolute;
+
+    right: 32px;
+    top: 27px;
+
+    text-align: right;
+
+    color: #718078;
+
+    font-size: 9px;
+
+    letter-spacing: 1px;
+}
+
+
+.location strong {
+
+    display: block;
+
+    color: #F1C400;
+
+    font-size: 19px;
+
+    margin-top: 4px;
+}
+
+
+/* ======================================================
+   CENTRAL BOOKIEOS CORE
+====================================================== */
+
+.core-system {
 
     position: absolute;
 
@@ -467,14 +376,12 @@ body {
     transform:
         translate(-50%,-50%);
 
-    width: 350px;
-    height: 350px;
+    width: 360px;
+    height: 360px;
 }
 
 
-.ring1,
-.ring2,
-.ring3 {
+.ring {
 
     position: absolute;
 
@@ -482,42 +389,48 @@ body {
 }
 
 
-.ring1 {
+.ring-one {
 
     inset: 0;
 
     border:
         1px solid rgba(241,196,0,.30);
 
+    border-left-color:
+        #F1C400;
+
+    border-right-color:
+        #44883E;
+
     animation:
-        rotate 16s linear infinite;
+        rotate 18s linear infinite;
 }
 
 
-.ring2 {
+.ring-two {
 
     inset: 30px;
 
     border:
-        2px dashed rgba(75,190,70,.35);
+        2px dashed rgba(68,136,62,.40);
 
     animation:
-        reverseRotate 12s linear infinite;
+        reverseRotate 13s linear infinite;
 }
 
 
-.ring3 {
+.ring-three {
 
     inset: 65px;
 
     border:
-        1px solid rgba(241,196,0,.7);
+        1px solid rgba(241,196,0,.60);
 
     box-shadow:
         0 0 30px rgba(241,196,0,.15);
 
     animation:
-        pulse 2.6s ease-in-out infinite;
+        ringPulse 2.5s ease-in-out infinite;
 }
 
 
@@ -528,8 +441,8 @@ body {
     left: 95px;
     top: 95px;
 
-    width: 160px;
-    height: 160px;
+    width: 170px;
+    height: 170px;
 
     border-radius: 50%;
 
@@ -546,18 +459,20 @@ body {
     background:
 
         radial-gradient(
-            circle,
-            rgba(241,196,0,.8),
-            rgba(68,136,62,.28) 35%,
-            rgba(5,9,6,.96) 70%
+            circle at 50% 42%,
+            rgba(255,225,72,.92),
+            rgba(241,196,0,.48) 18%,
+            rgba(68,136,62,.20) 43%,
+            rgba(3,8,5,.98) 72%
         );
 
     box-shadow:
         0 0 25px #F1C400,
-        0 0 75px rgba(241,196,0,.38);
+        0 0 70px rgba(241,196,0,.38),
+        0 0 120px rgba(68,136,62,.16);
 
     animation:
-        corePulse 2s ease-in-out infinite;
+        corePulse 2.2s ease-in-out infinite;
 }
 
 
@@ -571,186 +486,341 @@ body {
 }
 
 
-.core-status {
+.core-sub {
 
-    color: #70E268;
+    margin-top: 5px;
 
-    margin-top: 8px;
+    font-size: 7px;
 
-    font-size: 9px;
+    color: #B9C1BA;
+
+    letter-spacing: 1.5px;
+}
+
+
+.core-online {
+
+    margin-top: 10px;
+
+    font-size: 8px;
+
+    color: #73E66C;
+
+    font-weight: 900;
 
     letter-spacing: 1px;
 }
 
 
-/* AGENTS */
+/* ======================================================
+   AGENTS
+====================================================== */
 
 .agent {
 
     position: absolute;
 
-    width: 255px;
+    width: 260px;
 
-    padding: 15px;
+    min-height: 104px;
+
+    padding: 14px;
 
     border-radius: 14px;
 
     background:
+
         linear-gradient(
             135deg,
-            rgba(13,20,15,.96),
-            rgba(7,12,8,.92)
+            rgba(14,23,17,.96),
+            rgba(5,10,7,.94)
         );
 
     border:
-        1px solid rgba(241,196,0,.24);
+        1px solid rgba(241,196,0,.25);
 
     box-shadow:
-        0 0 22px rgba(0,0,0,.45);
+        0 0 25px rgba(0,0,0,.5);
 }
 
 
 .agent.online {
+
     border-color:
-        rgba(81,213,76,.38);
-}
+        rgba(83,213,77,.45);
 
-
-.a1 {
-    top: 140px;
-    left: 4%;
-}
-
-.a2 {
-    top: 275px;
-    left: 4%;
-}
-
-.a3 {
-    top: 410px;
-    left: 4%;
-}
-
-.a4 {
-    top: 140px;
-    right: 4%;
-}
-
-.a5 {
-    top: 275px;
-    right: 4%;
-}
-
-.a6 {
-    top: 410px;
-    right: 4%;
+    box-shadow:
+        0 0 18px rgba(68,136,62,.10);
 }
 
 
 .agent-title {
 
-    font-size: 13px;
+    font-size: 12px;
 
     font-weight: 900;
+
+    letter-spacing: .4px;
 }
 
 
 .agent-job {
 
-    color: #718078;
+    margin-top: 7px;
+
+    color: #78847B;
 
     font-size: 9px;
 
-    line-height: 1.5;
-
-    margin-top: 6px;
+    line-height: 1.45;
 }
 
 
-.online-status {
+.status-online {
 
-    color: #6EE466;
+    margin-top: 8px;
 
-    font-size: 9px;
+    color: #70E568;
+
+    font-size: 8px;
 
     font-weight: 900;
 
-    margin-top: 8px;
+    letter-spacing: 1px;
 }
 
 
-.planned-status {
+.status-planned {
+
+    margin-top: 8px;
 
     color: #F1C400;
 
-    font-size: 9px;
+    font-size: 8px;
 
     font-weight: 900;
 
-    margin-top: 8px;
+    letter-spacing: 1px;
 }
 
 
-/* CONNECTIONS */
+.a1 {
+    left: 4%;
+    top: 140px;
+}
 
-.connector {
+.a2 {
+    left: 4%;
+    top: 275px;
+}
+
+.a3 {
+    left: 4%;
+    top: 410px;
+}
+
+
+.a4 {
+    right: 4%;
+    top: 140px;
+}
+
+.a5 {
+    right: 4%;
+    top: 275px;
+}
+
+.a6 {
+    right: 4%;
+    top: 410px;
+}
+
+
+/* ======================================================
+   CONNECTION BEAMS
+====================================================== */
+
+.beam {
 
     position: absolute;
 
+    width: 190px;
     height: 1px;
-
-    width: 180px;
-
-    opacity: .65;
 
     background:
 
         linear-gradient(
             90deg,
             transparent,
-            #F1C400,
-            #44883E,
+            rgba(241,196,0,.9),
+            rgba(68,136,62,.8),
             transparent
         );
 
     box-shadow:
-        0 0 8px rgba(241,196,0,.35);
+        0 0 9px rgba(241,196,0,.4);
+
+    opacity: .6;
+
+    animation:
+        beamPulse 2s ease-in-out infinite;
 }
 
 
-.c1 {
-    left: calc(50% - 340px);
-    top: 210px;
+.b1 {
+    left: calc(50% - 355px);
+    top: 200px;
 }
 
-.c2 {
-    left: calc(50% - 340px);
-    top: 340px;
+.b2 {
+    left: calc(50% - 355px);
+    top: 335px;
 }
 
-.c3 {
-    left: calc(50% - 340px);
+.b3 {
+    left: calc(50% - 355px);
     top: 470px;
 }
 
 
-.c4 {
-    right: calc(50% - 340px);
-    top: 210px;
+.b4 {
+    right: calc(50% - 355px);
+    top: 200px;
 }
 
-.c5 {
-    right: calc(50% - 340px);
-    top: 340px;
+.b5 {
+    right: calc(50% - 355px);
+    top: 335px;
 }
 
-.c6 {
-    right: calc(50% - 340px);
+.b6 {
+    right: calc(50% - 355px);
     top: 470px;
 }
 
 
-/* ANIMATIONS */
+/* ======================================================
+   FLOATING SPORTS OBJECTS
+====================================================== */
+
+.sport {
+
+    position: absolute;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    width: 64px;
+    height: 64px;
+
+    border-radius: 50%;
+
+    font-size: 28px;
+
+    background:
+
+        radial-gradient(
+            circle,
+            rgba(241,196,0,.13),
+            rgba(5,12,8,.60)
+        );
+
+    border:
+        1px solid rgba(241,196,0,.25);
+
+    box-shadow:
+        0 0 25px rgba(241,196,0,.10);
+
+    animation:
+        float 6s ease-in-out infinite;
+}
+
+
+.football {
+
+    left: 30%;
+    top: 100px;
+}
+
+
+.basketball {
+
+    right: 29%;
+    top: 105px;
+
+    animation-delay: -1.5s;
+}
+
+
+.f1 {
+
+    left: 30%;
+    bottom: 50px;
+
+    animation-delay: -3s;
+}
+
+
+.tennis {
+
+    right: 29%;
+    bottom: 55px;
+
+    animation-delay: -4.5s;
+}
+
+
+.trophy {
+
+    left: 50%;
+    top: 87px;
+
+    transform: translateX(-50%);
+
+    width: 48px;
+    height: 48px;
+
+    font-size: 21px;
+
+    animation:
+        trophyFloat 6s ease-in-out infinite;
+}
+
+
+/* ======================================================
+   BOTTOM STATUS
+====================================================== */
+
+.footer {
+
+    position: absolute;
+
+    bottom: 17px;
+    left: 50%;
+
+    transform:
+        translateX(-50%);
+
+    color: #667268;
+
+    font-size: 8px;
+
+    letter-spacing: 2px;
+
+    white-space: nowrap;
+}
+
+
+.footer span {
+    color: #F1C400;
+}
+
+
+/* ======================================================
+   ANIMATION
+====================================================== */
 
 @keyframes rotate {
 
@@ -776,10 +846,28 @@ body {
 }
 
 
-@keyframes pulse {
+@keyframes corePulse {
 
     0%,100% {
-        opacity: .35;
+
+        box-shadow:
+            0 0 22px #F1C400,
+            0 0 60px rgba(241,196,0,.30);
+    }
+
+    50% {
+
+        box-shadow:
+            0 0 38px #F1C400,
+            0 0 100px rgba(241,196,0,.52);
+    }
+}
+
+
+@keyframes ringPulse {
+
+    0%,100% {
+        opacity: .4;
     }
 
     50% {
@@ -788,20 +876,81 @@ body {
 }
 
 
-@keyframes corePulse {
+@keyframes beamPulse {
 
     0%,100% {
-
-        box-shadow:
-            0 0 20px #F1C400,
-            0 0 55px rgba(241,196,0,.25);
+        opacity: .25;
     }
 
     50% {
+        opacity: .9;
+    }
+}
 
-        box-shadow:
-            0 0 35px #F1C400,
-            0 0 100px rgba(241,196,0,.5);
+
+@keyframes float {
+
+    0%,100% {
+        transform:
+            translateY(0px)
+            rotate(-4deg);
+    }
+
+    50% {
+        transform:
+            translateY(-20px)
+            rotate(7deg);
+    }
+}
+
+
+@keyframes trophyFloat {
+
+    0%,100% {
+        transform:
+            translateX(-50%)
+            translateY(0px);
+    }
+
+    50% {
+        transform:
+            translateX(-50%)
+            translateY(-15px);
+    }
+}
+
+
+@keyframes starsMove {
+
+    from {
+        background-position: 0 0;
+    }
+
+    to {
+        background-position: 95px 95px;
+    }
+}
+
+
+/* ======================================================
+   SMALL SCREENS
+====================================================== */
+
+@media(max-width:1100px) {
+
+    .agent {
+        width: 215px;
+    }
+
+    .core-system {
+
+        transform:
+            translate(-50%,-50%)
+            scale(.78);
+    }
+
+    .sport {
+        opacity: .5;
     }
 }
 
@@ -815,172 +964,260 @@ body {
 <div class="hq">
 
 
-<div class="title">
+    <div class="stars"></div>
 
-<span class="yellow">
-◉ BOOKIE
-</span>
 
-<span class="green">
-OS
-</span>
+    <!-- LOGO -->
+
+    <div class="logo">
+
+        <span class="yellow">
+            ◉ BOOKIE
+        </span>
+
+        <span class="green">
+            OS
+        </span>
+
+    </div>
+
+
+    <div class="subtitle">
+        BOOKIECO ARTIFICIAL INTELLIGENCE · SCIENTIFIC OPERATIONS HQ
+    </div>
+
+
+    <div class="location">
+
+        LARNACA · CYPRUS
+
+        <strong id="clock">
+            00:00:00
+        </strong>
+
+        HQ NETWORK ONLINE
+
+    </div>
+
+
+
+    <!-- FLOATING SPORTS -->
+
+    <div class="sport football">
+        ⚽
+    </div>
+
+    <div class="sport basketball">
+        🏀
+    </div>
+
+    <div class="sport f1">
+        🏎️
+    </div>
+
+    <div class="sport tennis">
+        🎾
+    </div>
+
+    <div class="sport trophy">
+        🏆
+    </div>
+
+
+
+    <!-- BEAMS -->
+
+    <div class="beam b1"></div>
+    <div class="beam b2"></div>
+    <div class="beam b3"></div>
+
+    <div class="beam b4"></div>
+    <div class="beam b5"></div>
+    <div class="beam b6"></div>
+
+
+
+    <!-- LEFT AGENTS -->
+
+    <div class="agent online a1">
+
+        <div class="agent-title">
+            🔎 WEEKLY MATCH SCOUT
+        </div>
+
+        <div class="agent-job">
+            Finds the strongest upcoming sporting events for BookieCo marketing.
+        </div>
+
+        <div class="status-online">
+            ● ONLINE
+        </div>
+
+    </div>
+
+
+    <div class="agent online a2">
+
+        <div class="agent-title">
+            🧠 BET RESEARCHER
+        </div>
+
+        <div class="agent-job">
+            Researches teams, players, statistics and betting concepts.
+        </div>
+
+        <div class="status-online">
+            ● ONLINE · AUTO
+        </div>
+
+    </div>
+
+
+    <div class="agent a3">
+
+        <div class="agent-title">
+            📣 MARKETING MANAGER
+        </div>
+
+        <div class="agent-job">
+            Creates BookieCo's final weekly marketing plan.
+        </div>
+
+        <div class="status-planned">
+            COMING NEXT
+        </div>
+
+    </div>
+
+
+
+    <!-- RIGHT AGENTS -->
+
+    <div class="agent a4">
+
+        <div class="agent-title">
+            🎁 PROMOTION SELECTOR
+        </div>
+
+        <div class="agent-job">
+            Selects the best BookieCo promotion for each event.
+        </div>
+
+        <div class="status-planned">
+            PLANNED
+        </div>
+
+    </div>
+
+
+    <div class="agent a5">
+
+        <div class="agent-title">
+            🎨 CREATIVE DIRECTOR
+        </div>
+
+        <div class="agent-job">
+            Controls templates, graphics and campaign creative direction.
+        </div>
+
+        <div class="status-planned">
+            PLANNED
+        </div>
+
+    </div>
+
+
+    <div class="agent a6">
+
+        <div class="agent-title">
+            ✍️ SOCIAL MEDIA WRITER
+        </div>
+
+        <div class="agent-job">
+            Creates headlines, captions, stories and calls-to-action.
+        </div>
+
+        <div class="status-planned">
+            PLANNED
+        </div>
+
+    </div>
+
+
+
+    <!-- CENTRAL CORE -->
+
+    <div class="core-system">
+
+        <div class="ring ring-one"></div>
+
+        <div class="ring ring-two"></div>
+
+        <div class="ring ring-three"></div>
+
+
+        <div class="core">
+
+            <div>
+
+                <div class="core-name">
+                    BOOKIEOS
+                </div>
+
+                <div class="core-sub">
+                    CENTRAL INTELLIGENCE
+                </div>
+
+                <div class="core-online">
+                    ● CORE ONLINE
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+
+    <div class="footer">
+
+        BOOKIECO AI HEADQUARTERS
+        &nbsp;·&nbsp;
+        <span>2 AGENTS ACTIVE</span>
+        &nbsp;·&nbsp;
+        MARKETING NETWORK
+
+    </div>
+
 
 </div>
 
 
-<div class="sub">
+<script>
 
-BOOKIECO ARTIFICIAL INTELLIGENCE OPERATIONS HQ
+function clock() {
 
-</div>
+    const now = new Date();
 
+    document.getElementById("clock").innerText =
+        now.toLocaleTimeString(
+            "en-GB",
+            {
+                hour12:false
+            }
+        );
+}
 
+clock();
 
-<div class="connector c1"></div>
-<div class="connector c2"></div>
-<div class="connector c3"></div>
+setInterval(
+    clock,
+    1000
+);
 
-<div class="connector c4"></div>
-<div class="connector c5"></div>
-<div class="connector c6"></div>
+</script>
 
-
-
-<div class="agent online a1">
-
-<div class="agent-title">
-🔎 WEEKLY MATCH SCOUT
-</div>
-
-<div class="agent-job">
-Scans upcoming sport events and identifies the strongest marketing opportunities.
-</div>
-
-<div class="online-status">
-● ONLINE
-</div>
-
-</div>
-
-
-
-<div class="agent online a2">
-
-<div class="agent-title">
-🧠 BET RESEARCHER
-</div>
-
-<div class="agent-job">
-Analyses teams, players, form, statistics and betting concepts.
-</div>
-
-<div class="online-status">
-● ONLINE · AUTO
-</div>
-
-</div>
-
-
-
-<div class="agent a3">
-
-<div class="agent-title">
-📣 MARKETING MANAGER
-</div>
-
-<div class="agent-job">
-Creates the final BookieCo weekly marketing plan.
-</div>
-
-<div class="planned-status">
-COMING NEXT
-</div>
-
-</div>
-
-
-
-<div class="agent a4">
-
-<div class="agent-title">
-🎁 PROMOTION SELECTOR
-</div>
-
-<div class="agent-job">
-Selects the best BookieCo promotion for each event.
-</div>
-
-<div class="planned-status">
-PLANNED
-</div>
-
-</div>
-
-
-
-<div class="agent a5">
-
-<div class="agent-title">
-🎨 CREATIVE DIRECTOR
-</div>
-
-<div class="agent-job">
-Controls templates, graphics and creative direction.
-</div>
-
-<div class="planned-status">
-PLANNED
-</div>
-
-</div>
-
-
-
-<div class="agent a6">
-
-<div class="agent-title">
-✍️ SOCIAL MEDIA WRITER
-</div>
-
-<div class="agent-job">
-Creates headlines, captions and social media copy.
-</div>
-
-<div class="planned-status">
-PLANNED
-</div>
-
-</div>
-
-
-
-<div class="core-wrap">
-
-<div class="ring1"></div>
-<div class="ring2"></div>
-<div class="ring3"></div>
-
-
-<div class="core">
-
-<div>
-
-<div class="core-name">
-BOOKIEOS
-</div>
-
-<div class="core-status">
-● CENTRAL CORE ONLINE
-</div>
-
-</div>
-
-</div>
-
-</div>
-
-
-</div>
 
 </body>
 
@@ -989,8 +1226,8 @@ BOOKIEOS
 
 
 components.html(
-    hq,
-    height=625,
+    hq_html,
+    height=665,
     scrolling=False
 )
 
@@ -999,12 +1236,12 @@ components.html(
 # COMMAND CONSOLE
 # =========================================================
 
-center_left, center, center_right = st.columns(
-    [0.12, 1, 0.12]
+space1, console, space2 = st.columns(
+    [0.10, 1, 0.10]
 )
 
 
-with center:
+with console:
 
     with st.container(border=True):
 
@@ -1016,6 +1253,10 @@ with center:
             "Command the BookieCo AI network."
         )
 
+
+        # =================================================
+        # VOICE
+        # =================================================
 
         voice_prompt = None
 
@@ -1045,12 +1286,17 @@ with center:
                     f"🎙️ {voice_prompt}"
                 )
 
+
             except Exception as e:
 
                 st.error(
                     f"Voice error: {e}"
                 )
 
+
+        # =================================================
+        # TEXT
+        # =================================================
 
         text_prompt = st.chat_input(
             "Ask BookieOS..."
@@ -1063,6 +1309,10 @@ with center:
         )
 
 
+        # =================================================
+        # PROCESS
+        # =================================================
+
         if user_prompt:
 
             with st.chat_message("user"):
@@ -1073,6 +1323,7 @@ with center:
 
 
             with st.chat_message("assistant"):
+
 
                 lower_prompt = (
                     user_prompt.lower()
@@ -1111,12 +1362,20 @@ with center:
                 )
 
 
+                # =========================================
+                # SCOUT + RESEARCHER
+                # =========================================
+
                 if use_scout:
 
                     try:
 
                         st.markdown(
                             "### 🔎 WEEKLY MATCH SCOUT"
+                        )
+
+                        st.caption(
+                            "Agent activated · researching upcoming sporting events"
                         )
 
 
@@ -1143,6 +1402,10 @@ with center:
                             "### 🧠 BET RESEARCHER"
                         )
 
+                        st.caption(
+                            "Agent activated · analysing Scout intelligence"
+                        )
+
 
                         researcher_task = f"""
 The Weekly Match Scout produced the report below.
@@ -1167,7 +1430,7 @@ We want interesting betting ideas for BookieCo marketing.
 
 Avoid boring extremely safe selections.
 
-Interesting ideas may include:
+Interesting ideas can include:
 
 - Player to score
 - Player to score + team win
@@ -1181,11 +1444,17 @@ Interesting ideas may include:
 - Cards
 - Logical bet-builder combinations
 
+Do NOT make combinations complicated just for the sake of it.
+
+IMPORTANT:
+
 Do NOT provide betting odds.
 
 Do NOT invent BookieCo odds.
 
-Do NOT claim a market is available at BookieCo.
+Do NOT claim that a betting market is available at BookieCo.
+
+Market availability will be verified by another system in the future.
 
 If an idea is weak, suggest a better betting angle.
 
@@ -1214,9 +1483,13 @@ SCOUT REPORT:
                     except Exception as e:
 
                         st.error(
-                            f"Agent error: {e}"
+                            f"Agent system error: {e}"
                         )
 
+
+                # =========================================
+                # NORMAL BOOKIEOS
+                # =========================================
 
                 else:
 
@@ -1230,13 +1503,21 @@ SCOUT REPORT:
                                 instructions="""
 You are BookieOS.
 
-You are the central AI operating system for
-BookieCo, a retail betting company in Cyprus.
+You are the central artificial intelligence
+operating system for BookieCo.
+
+BookieCo is a retail betting company in Cyprus.
 
 ACTIVE AGENTS:
 
-Weekly Match Scout
-Bet Researcher
+1. Weekly Match Scout
+2. Bet Researcher
+
+Weekly Match Scout researches upcoming sporting
+events for BookieCo marketing.
+
+Bet Researcher researches teams, players,
+statistics and proposed betting concepts.
 
 PLANNED AGENTS:
 
@@ -1245,19 +1526,19 @@ Promotion Selector
 Creative Director
 Social Media Writer
 
-BookieOS does not currently have access to
-BookieCo live betting odds.
+BookieOS currently does NOT have access to
+BookieCo live markets or odds.
 
 Never invent odds.
 
-Never claim a BookieCo market is available
-unless it has been verified.
+Never claim that a betting market exists at
+BookieCo unless it has been verified.
 
-Answer Greek in Greek.
+If the user speaks Greek, answer in Greek.
 
-Answer English in English.
+If the user speaks English, answer in English.
 
-Keep responses concise.
+Keep responses concise and practical.
 """,
 
                                 input=user_prompt
