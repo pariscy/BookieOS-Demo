@@ -9,18 +9,23 @@ def search_bookieco(match_text="Olympiacos"):
     with sync_playwright() as p:
 
         browser = p.chromium.launch(
-            headless=True
+            headless=True,
+            executable_path="/usr/bin/chromium",
+            args=[
+                "--no-sandbox",
+                "--disable-dev-shm-usage"
+            ]
         )
 
         page = browser.new_page()
 
         page.goto(
             BOOKIECO_URL,
-            wait_until="networkidle",
+            wait_until="domcontentloaded",
             timeout=60000
         )
 
-        page.wait_for_timeout(5000)
+        page.wait_for_timeout(8000)
 
         text = page.locator("body").inner_text()
 
