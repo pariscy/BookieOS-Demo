@@ -6,7 +6,7 @@ from bet_researcher import run_bet_researcher
 
 
 # =========================================================
-# PAGE CONFIG
+# PAGE
 # =========================================================
 
 st.set_page_config(
@@ -18,268 +18,147 @@ st.set_page_config(
 
 
 # =========================================================
-# BOOKIECO COLORS
-# =========================================================
-
-BOOKIE_YELLOW = "#F1C400"
-BOOKIE_GREEN = "#44883E"
-BOOKIE_DARK = "#212322"
-BOOKIE_PANEL = "#17191A"
-BOOKIE_PANEL_2 = "#111314"
-BOOKIE_TEXT = "#F4F4F4"
-BOOKIE_MUTED = "#9FA3A6"
-
-
-# =========================================================
-# CUSTOM DESIGN
+# COLORS / CSS
 # =========================================================
 
 st.markdown(
-    f"""
-    <style>
+    """
+<style>
 
-    .stApp {{
-        background:
-            radial-gradient(circle at 20% 0%, rgba(68,136,62,0.10), transparent 30%),
-            radial-gradient(circle at 80% 0%, rgba(241,196,0,0.08), transparent 30%),
-            {BOOKIE_PANEL_2};
-        color: {BOOKIE_TEXT};
-    }}
+.stApp {
+    background:
+        radial-gradient(circle at 15% 0%, rgba(68,136,62,0.10), transparent 28%),
+        radial-gradient(circle at 85% 0%, rgba(241,196,0,0.08), transparent 28%),
+        #101211;
+}
 
-    header {{
-        background: transparent !important;
-    }}
+header {
+    background: transparent !important;
+}
 
-    #MainMenu {{
-        visibility: hidden;
-    }}
+#MainMenu {
+    visibility: hidden;
+}
 
-    footer {{
-        visibility: hidden;
-    }}
+footer {
+    visibility: hidden;
+}
 
-    .block-container {{
-        padding-top: 1.5rem;
-        padding-bottom: 2rem;
-        max-width: 1600px;
-    }}
+.block-container {
+    padding-top: 1.5rem;
+    padding-bottom: 3rem;
+    max-width: 1550px;
+}
 
-    /* -------------------------------------------------- */
-    /* LOGO / HEADER                                      */
-    /* -------------------------------------------------- */
+/* TITLES */
 
-    .bookie-header {{
-        background: linear-gradient(
-            135deg,
-            rgba(33,35,34,0.98),
-            rgba(20,22,21,0.98)
-        );
-        border: 1px solid rgba(255,255,255,0.08);
-        border-radius: 20px;
-        padding: 24px 28px;
-        margin-bottom: 22px;
-        box-shadow: 0px 18px 60px rgba(0,0,0,0.25);
-    }}
+h1, h2, h3 {
+    color: #F4F4F4;
+}
 
-    .bookie-logo {{
-        font-size: 34px;
-        font-weight: 900;
-        letter-spacing: 2px;
-        margin: 0;
-    }}
+p {
+    color: #B4B8B5;
+}
 
-    .bookie-logo-yellow {{
-        color: {BOOKIE_YELLOW};
-    }}
+/* CONTAINERS */
 
-    .bookie-logo-green {{
-        color: {BOOKIE_GREEN};
-    }}
+[data-testid="stVerticalBlockBorderWrapper"] {
+    background: rgba(23,25,24,0.94);
+    border: 1px solid rgba(255,255,255,0.08) !important;
+    border-radius: 16px;
+}
 
-    .bookie-subtitle {{
-        color: {BOOKIE_MUTED};
-        font-size: 13px;
-        margin-top: 4px;
-        letter-spacing: 1.2px;
-        text-transform: uppercase;
-    }}
+/* METRICS */
 
-    .system-live {{
-        display: inline-block;
-        margin-top: 14px;
-        background: rgba(68,136,62,0.12);
-        color: #7ED374;
-        border: 1px solid rgba(68,136,62,0.4);
-        border-radius: 999px;
-        padding: 7px 12px;
-        font-size: 12px;
-        font-weight: 800;
-        letter-spacing: 1px;
-    }}
+[data-testid="stMetric"] {
+    background: rgba(23,25,24,0.96);
+    border: 1px solid rgba(255,255,255,0.08);
+    padding: 15px 18px;
+    border-radius: 15px;
+}
 
-    /* -------------------------------------------------- */
-    /* PANELS                                             */
-    /* -------------------------------------------------- */
+[data-testid="stMetricLabel"] {
+    color: #9FA3A0;
+}
 
-    .panel {{
-        background: rgba(23,25,26,0.96);
-        border: 1px solid rgba(255,255,255,0.07);
-        border-radius: 18px;
-        padding: 18px;
-        margin-bottom: 16px;
-        box-shadow: 0px 12px 35px rgba(0,0,0,0.20);
-    }}
+[data-testid="stMetricValue"] {
+    color: #F1C400;
+}
 
-    .panel-title {{
-        font-size: 14px;
-        font-weight: 900;
-        color: white;
-        margin-bottom: 5px;
-        letter-spacing: 0.5px;
-    }}
+/* CHAT */
 
-    .panel-subtitle {{
-        color: {BOOKIE_MUTED};
-        font-size: 12px;
-        margin-bottom: 12px;
-    }}
+[data-testid="stChatMessage"] {
+    background: rgba(23,25,24,0.95);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 16px;
+    margin-bottom: 10px;
+}
 
-    /* -------------------------------------------------- */
-    /* AGENT CARDS                                        */
-    /* -------------------------------------------------- */
+[data-testid="stChatInput"] {
+    border-radius: 14px;
+}
 
-    .agent-card {{
-        background: linear-gradient(
-            145deg,
-            rgba(30,32,31,1),
-            rgba(22,24,23,1)
-        );
-        border: 1px solid rgba(255,255,255,0.07);
-        border-radius: 15px;
-        padding: 14px;
-        margin-bottom: 11px;
-    }}
+/* BUTTONS */
 
-    .agent-name {{
-        font-size: 14px;
-        font-weight: 800;
-        color: white;
-        margin-bottom: 5px;
-    }}
+.stButton > button {
+    background: #F1C400;
+    color: #151515;
+    border: none;
+    border-radius: 10px;
+    font-weight: 800;
+}
 
-    .agent-job {{
-        color: {BOOKIE_MUTED};
-        font-size: 11px;
-        line-height: 1.4;
-        margin-bottom: 9px;
-    }}
+.stButton > button:hover {
+    background: #FFD51A;
+    color: #151515;
+    border: none;
+}
 
-    .agent-online {{
-        display: inline-block;
-        background: rgba(68,136,62,0.13);
-        border: 1px solid rgba(68,136,62,0.35);
-        color: #7ED374;
-        padding: 4px 8px;
-        border-radius: 999px;
-        font-size: 10px;
-        font-weight: 800;
-        letter-spacing: 0.7px;
-    }}
+/* STATUS */
 
-    .agent-coming {{
-        display: inline-block;
-        background: rgba(241,196,0,0.10);
-        border: 1px solid rgba(241,196,0,0.30);
-        color: {BOOKIE_YELLOW};
-        padding: 4px 8px;
-        border-radius: 999px;
-        font-size: 10px;
-        font-weight: 800;
-        letter-spacing: 0.7px;
-    }}
+.online {
+    color: #70D36B;
+    font-weight: 800;
+}
 
-    /* -------------------------------------------------- */
-    /* METRIC CARDS                                       */
-    /* -------------------------------------------------- */
+.planned {
+    color: #F1C400;
+    font-weight: 800;
+}
 
-    .metric-card {{
-        background: rgba(23,25,26,0.96);
-        border: 1px solid rgba(255,255,255,0.07);
-        border-radius: 16px;
-        padding: 16px;
-        min-height: 100px;
-    }}
+.small-text {
+    color: #8F9591;
+    font-size: 0.82rem;
+}
 
-    .metric-label {{
-        color: {BOOKIE_MUTED};
-        font-size: 11px;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-    }}
+.agent-title {
+    font-size: 1rem;
+    font-weight: 800;
+    color: white;
+}
 
-    .metric-value {{
-        color: white;
-        font-size: 24px;
-        font-weight: 900;
-        margin-top: 5px;
-    }}
+.logo {
+    font-size: 2.2rem;
+    font-weight: 900;
+    letter-spacing: 2px;
+}
 
-    .metric-yellow {{
-        color: {BOOKIE_YELLOW};
-    }}
+.logo-yellow {
+    color: #F1C400;
+}
 
-    .metric-green {{
-        color: #7ED374;
-    }}
+.logo-green {
+    color: #44883E;
+}
 
-    /* -------------------------------------------------- */
-    /* CHAT                                               */
-    /* -------------------------------------------------- */
+.system-text {
+    color: #70D36B;
+    font-weight: 800;
+    letter-spacing: 1px;
+}
 
-    [data-testid="stChatMessage"] {{
-        background: rgba(23,25,26,0.92);
-        border: 1px solid rgba(255,255,255,0.06);
-        border-radius: 16px;
-        padding: 8px;
-    }}
-
-    [data-testid="stChatInput"] {{
-        border-radius: 14px;
-    }}
-
-    textarea {{
-        border-radius: 12px !important;
-    }}
-
-    /* -------------------------------------------------- */
-    /* BUTTONS                                            */
-    /* -------------------------------------------------- */
-
-    .stButton > button {{
-        background: linear-gradient(
-            135deg,
-            {BOOKIE_YELLOW},
-            #D7AD00
-        );
-        color: #111;
-        border: none;
-        border-radius: 12px;
-        font-weight: 900;
-        padding: 0.65rem 1rem;
-    }}
-
-    .stButton > button:hover {{
-        border: none;
-        color: #111;
-        filter: brightness(1.05);
-    }}
-
-    hr {{
-        border-color: rgba(255,255,255,0.06);
-    }}
-
-    </style>
-    """,
+</style>
+""",
     unsafe_allow_html=True
 )
 
@@ -297,84 +176,57 @@ client = OpenAI(
 # HEADER
 # =========================================================
 
-st.markdown(
-    f"""
-    <div class="bookie-header">
+with st.container(border=True):
 
-        <div class="bookie-logo">
-            <span class="bookie-logo-yellow">◉ BOOKIE</span><span class="bookie-logo-green">OS</span>
-        </div>
+    st.markdown(
+        """
+<span class="logo">
+<span class="logo-yellow">◉ BOOKIE</span><span class="logo-green">OS</span>
+</span>
+""",
+        unsafe_allow_html=True
+    )
 
-        <div class="bookie-subtitle">
-            BookieCo Artificial Intelligence Operating System
-        </div>
+    st.caption(
+        "BOOKIECO ARTIFICIAL INTELLIGENCE OPERATING SYSTEM"
+    )
 
-        <div class="system-live">
-            ● SYSTEM ONLINE
-        </div>
-
-    </div>
-    """,
-    unsafe_allow_html=True
-)
+    st.markdown(
+        '<span class="system-text">● SYSTEM ONLINE</span>',
+        unsafe_allow_html=True
+    )
 
 
 # =========================================================
-# TOP METRICS
+# METRICS
 # =========================================================
 
-metric_1, metric_2, metric_3, metric_4 = st.columns(4)
+st.write("")
 
+m1, m2, m3, m4 = st.columns(4)
 
-with metric_1:
-
-    st.markdown(
-        """
-        <div class="metric-card">
-            <div class="metric-label">Active Agents</div>
-            <div class="metric-value metric-green">2</div>
-        </div>
-        """,
-        unsafe_allow_html=True
+with m1:
+    st.metric(
+        "ACTIVE AGENTS",
+        "2"
     )
 
-
-with metric_2:
-
-    st.markdown(
-        """
-        <div class="metric-card">
-            <div class="metric-label">System</div>
-            <div class="metric-value metric-green">ONLINE</div>
-        </div>
-        """,
-        unsafe_allow_html=True
+with m2:
+    st.metric(
+        "SYSTEM",
+        "ONLINE"
     )
 
-
-with metric_3:
-
-    st.markdown(
-        """
-        <div class="metric-card">
-            <div class="metric-label">Department</div>
-            <div class="metric-value metric-yellow">MARKETING</div>
-        </div>
-        """,
-        unsafe_allow_html=True
+with m3:
+    st.metric(
+        "DEPARTMENT",
+        "MARKETING"
     )
 
-
-with metric_4:
-
-    st.markdown(
-        """
-        <div class="metric-card">
-            <div class="metric-label">Next Agent</div>
-            <div class="metric-value">MANAGER</div>
-        </div>
-        """,
-        unsafe_allow_html=True
+with m4:
+    st.metric(
+        "NEXT AGENT",
+        "MARKETING MANAGER"
     )
 
 
@@ -385,31 +237,30 @@ st.write("")
 # MAIN LAYOUT
 # =========================================================
 
-main_column, agent_column = st.columns(
+main, agents = st.columns(
     [3.2, 1],
     gap="large"
 )
 
 
 # =========================================================
-# MAIN CHAT PANEL
+# COMMAND CENTER
 # =========================================================
 
-with main_column:
+with main:
 
-    st.markdown(
-        """
-        <div class="panel">
-            <div class="panel-title">
-                BOOKIEOS COMMAND CENTER
-            </div>
-            <div class="panel-subtitle">
-                Talk to BookieOS. It will route tasks to the correct specialist agent.
-            </div>
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
+    with st.container(border=True):
+
+        st.subheader(
+            "◉ BOOKIEOS COMMAND CENTER"
+        )
+
+        st.caption(
+            "Give BookieOS a command. It will send the work to the correct specialist agents."
+        )
+
+
+    st.write("")
 
 
     # =====================================================
@@ -421,7 +272,6 @@ with main_column:
     audio = st.audio_input(
         "🎤 Voice Command"
     )
-
 
     if audio is not None:
 
@@ -447,7 +297,7 @@ with main_column:
 
 
     # =====================================================
-    # TEXT INPUT
+    # CHAT INPUT
     # =====================================================
 
     text_prompt = st.chat_input(
@@ -458,7 +308,7 @@ with main_column:
 
 
     # =====================================================
-    # REQUEST HANDLING
+    # PROCESS COMMAND
     # =====================================================
 
     if user_prompt:
@@ -508,7 +358,7 @@ with main_column:
 
 
             # =================================================
-            # AGENT WORKFLOW
+            # WEEKLY MARKETING WORKFLOW
             # =================================================
 
             if use_scout:
@@ -523,8 +373,13 @@ with main_column:
                         "### 🔎 Weekly Match Scout"
                     )
 
+                    st.caption(
+                        "Searching upcoming sporting events..."
+                    )
+
+
                     with st.spinner(
-                        "Scout is researching upcoming events..."
+                        "Scout working..."
                     ):
 
                         scout_report = run_weekly_match_scout(
@@ -535,6 +390,7 @@ with main_column:
                     st.write(
                         scout_report
                     )
+
 
                     st.divider()
 
@@ -547,12 +403,12 @@ with main_column:
                         "### 🧠 Bet Researcher"
                     )
 
+                    st.caption(
+                        "Researching the Scout's recommendations..."
+                    )
 
-                    with st.spinner(
-                        "Researcher is analysing the betting ideas..."
-                    ):
 
-                        researcher_task = f"""
+                    researcher_task = f"""
 The Weekly Match Scout produced the report below.
 
 Analyse EVERY proposed football betting idea.
@@ -609,6 +465,10 @@ SCOUT REPORT:
 """
 
 
+                    with st.spinner(
+                        "Researcher working..."
+                    ):
+
                         research_report = run_bet_researcher(
                             researcher_task
                         )
@@ -644,26 +504,26 @@ You are BookieOS.
 You are the central AI assistant for BookieCo,
 a retail betting company in Cyprus.
 
-Currently connected specialist agents:
+CONNECTED AGENTS:
 
 1. Weekly Match Scout
 2. Bet Researcher
 
 Weekly Match Scout researches upcoming sporting
-events that may be useful for BookieCo marketing.
+events for BookieCo marketing.
 
-Bet Researcher researches proposed football
-betting ideas and evaluates whether they make sense.
+Bet Researcher researches proposed betting ideas,
+teams, players and statistics.
 
 BookieOS currently does NOT have access to
-BookieCo live betting markets or odds.
+BookieCo live markets or odds.
 
 Never invent odds.
 
-Never claim that a betting market is available
-at BookieCo unless it has actually been verified.
+Never claim a betting market is available at
+BookieCo unless it has been verified.
 
-Future marketing agents will include:
+PLANNED MARKETING AGENTS:
 
 Marketing Manager
 Promotion Selector
@@ -694,194 +554,142 @@ Keep responses practical and concise.
 
 
 # =========================================================
-# AGENT CONTROL PANEL
+# AGENT NETWORK
 # =========================================================
 
-with agent_column:
+with agents:
 
-    st.markdown(
-        """
-        <div class="panel">
-            <div class="panel-title">
-                AGENT NETWORK
-            </div>
-            <div class="panel-subtitle">
-                BookieOS specialist workforce
-            </div>
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
+    with st.container(border=True):
+
+        st.subheader(
+            "AGENT NETWORK"
+        )
+
+        st.caption(
+            "Marketing Department"
+        )
 
 
-    # -----------------------------------------------------
-    # SCOUT
-    # -----------------------------------------------------
+    # =====================================================
+    # AGENT 1
+    # =====================================================
 
-    st.markdown(
-        """
-        <div class="agent-card">
+    with st.container(border=True):
 
-            <div class="agent-name">
-                🔎 Weekly Match Scout
-            </div>
+        st.markdown(
+            "### 🔎 Weekly Match Scout"
+        )
 
-            <div class="agent-job">
-                Finds the strongest upcoming sports events for marketing.
-            </div>
+        st.caption(
+            "Finds the strongest upcoming sporting events for marketing."
+        )
 
-            <div class="agent-online">
-                ● ONLINE
-            </div>
-
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
+        st.markdown(
+            '<span class="online">● ONLINE</span>',
+            unsafe_allow_html=True
+        )
 
 
-    # -----------------------------------------------------
-    # RESEARCHER
-    # -----------------------------------------------------
+    # =====================================================
+    # AGENT 2
+    # =====================================================
 
-    st.markdown(
-        """
-        <div class="agent-card">
+    with st.container(border=True):
 
-            <div class="agent-name">
-                🧠 Bet Researcher
-            </div>
+        st.markdown(
+            "### 🧠 Bet Researcher"
+        )
 
-            <div class="agent-job">
-                Researches teams, players, statistics and betting angles.
-            </div>
+        st.caption(
+            "Researches teams, players, statistics and betting angles."
+        )
 
-            <div class="agent-online">
-                ● ONLINE · AUTO
-            </div>
-
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
+        st.markdown(
+            '<span class="online">● ONLINE · AUTO</span>',
+            unsafe_allow_html=True
+        )
 
 
-    # -----------------------------------------------------
-    # MARKETING MANAGER
-    # -----------------------------------------------------
+    # =====================================================
+    # AGENT 3
+    # =====================================================
 
-    st.markdown(
-        """
-        <div class="agent-card">
+    with st.container(border=True):
 
-            <div class="agent-name">
-                📣 Marketing Manager
-            </div>
+        st.markdown(
+            "### 📣 Marketing Manager"
+        )
 
-            <div class="agent-job">
-                Decides what BookieCo should post and builds the weekly plan.
-            </div>
+        st.caption(
+            "Decides what BookieCo should post and builds the weekly content plan."
+        )
 
-            <div class="agent-coming">
-                COMING NEXT
-            </div>
-
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
+        st.markdown(
+            '<span class="planned">COMING NEXT</span>',
+            unsafe_allow_html=True
+        )
 
 
-    # -----------------------------------------------------
-    # PROMOTION SELECTOR
-    # -----------------------------------------------------
+    # =====================================================
+    # AGENT 4
+    # =====================================================
 
-    st.markdown(
-        """
-        <div class="agent-card">
+    with st.container(border=True):
 
-            <div class="agent-name">
-                🎁 Promotion Selector
-            </div>
+        st.markdown(
+            "### 🎁 Promotion Selector"
+        )
 
-            <div class="agent-job">
-                Selects the best BookieCo promotion for each day or event.
-            </div>
+        st.caption(
+            "Chooses the best BookieCo promotion for each day or event."
+        )
 
-            <div class="agent-coming">
-                PLANNED
-            </div>
-
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
+        st.markdown(
+            '<span class="planned">PLANNED</span>',
+            unsafe_allow_html=True
+        )
 
 
-    # -----------------------------------------------------
-    # CREATIVE DIRECTOR
-    # -----------------------------------------------------
+    # =====================================================
+    # AGENT 5
+    # =====================================================
 
-    st.markdown(
-        """
-        <div class="agent-card">
+    with st.container(border=True):
 
-            <div class="agent-name">
-                🎨 Creative Director
-            </div>
+        st.markdown(
+            "### 🎨 Creative Director"
+        )
 
-            <div class="agent-job">
-                Chooses templates, graphics, players and creative direction.
-            </div>
+        st.caption(
+            "Chooses templates, graphics, players and creative direction."
+        )
 
-            <div class="agent-coming">
-                PLANNED
-            </div>
-
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
+        st.markdown(
+            '<span class="planned">PLANNED</span>',
+            unsafe_allow_html=True
+        )
 
 
-    # -----------------------------------------------------
-    # SOCIAL WRITER
-    # -----------------------------------------------------
+    # =====================================================
+    # AGENT 6
+    # =====================================================
 
-    st.markdown(
-        """
-        <div class="agent-card">
+    with st.container(border=True):
 
-            <div class="agent-name">
-                ✍️ Social Media Writer
-            </div>
+        st.markdown(
+            "### ✍️ Social Media Writer"
+        )
 
-            <div class="agent-job">
-                Writes headlines, captions, stories and calls-to-action.
-            </div>
+        st.caption(
+            "Writes headlines, captions, stories and calls-to-action."
+        )
 
-            <div class="agent-coming">
-                PLANNED
-            </div>
-
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
+        st.markdown(
+            '<span class="planned">PLANNED</span>',
+            unsafe_allow_html=True
+        )
 
 
-    st.markdown(
-        f"""
-        <div style="
-            margin-top:16px;
-            text-align:center;
-            color:{BOOKIE_MUTED};
-            font-size:11px;
-        ">
-            BOOKIECO AI NETWORK
-            <br>
-            VERSION 0.1
-        </div>
-        """,
-        unsafe_allow_html=True
+    st.caption(
+        "BOOKIECO AI NETWORK · v0.1"
     )
