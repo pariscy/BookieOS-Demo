@@ -1,4 +1,5 @@
 import asyncio
+import http.cookiejar
 import json
 import random
 import time
@@ -8,8 +9,10 @@ import websockets
 from bookieco_market_reader import BookieCoMarketReader
 
 
+BOOKIECO_BASE_URL = "https://agents.bookieco.com.cy"
+BOOKIECO_SESSION_URL = BOOKIECO_BASE_URL + "/api/site/session"
+BOOKIECO_SEARCH_URL = BOOKIECO_BASE_URL + "/api/sports/search"
 BOOKIECO_WS_URL = "wss://agents.bookieco.com.cy/ws/"
-BOOKIECO_SEARCH_URL = "https://agents.bookieco.com.cy/api/sports/search"
 
 
 class BookieCoLiveFeed:
@@ -19,9 +22,21 @@ class BookieCoLiveFeed:
         self.reader = BookieCoMarketReader()
         self.connected = False
 
+        self.cookie_jar = (
+            http.cookiejar.CookieJar()
+        )
+
+        self.http_opener = (
+            urllib.request.build_opener(
+                urllib.request.HTTPCookieProcessor(
+                    self.cookie_jar
+                )
+            )
+        )
+
 
     # =====================================================
-    # BOOKIECO INTERNAL ID
+    # CREATE BOOKIECO INTERNAL ID
     # =====================================================
 
     def _create_internal_id(self):
@@ -43,7 +58,120 @@ class BookieCoLiveFeed:
 
 
     # =====================================================
-    # SEARCH BOOKIECO
+    # COMMON HTTP HEADERS
+    # =====================================================
+
+    def _add_common_headers(
+        self,
+        request
+    ):
+
+        request.add_header(
+            "Accept",
+            "application/json, text/plain, */*"
+        )
+
+        request.add_header(
+            "Content-Type",
+            "application/json"
+        )
+
+        request.add_header(
+            "Origin",
+            BOOKIECO_BASE_URL
+        )
+
+        request.add_header(
+            "Referer",
+            BOOKIECO_BASE_URL + "/"
+        )
+
+        request.add_header(
+            "User-Agent",
+            "Mozilla/5.0"
+        )
+
+
+    # =====================================================
+    # CREATE PUBLIC BOOKIECO SESSION
+    # =====================================================
+
+    def create_session(self):
+
+        payload = {
+
+            "headers": {},
+
+            "requestArguments": {}
+        }
+
+
+        body = json.dumps(
+            payload
+        ).encode(
+            "utf-8"
+        )
+
+
+        request = urllib.request.Request(
+            BOOKIECO_SESSION_URL,
+            data=body,
+            method="POST"
+        )
+
+
+        self._add_common_headers(
+            request
+        )
+
+
+        try:
+
+            with self.http_opener.open(
+                request,
+                timeout=15
+            ) as response:
+
+                raw_data = (
+                    response.read()
+                    .decode(
+                        "utf-8"
+                    )
+                )
+
+
+            data = json.loads(
+                raw_data
+            )
+
+
+            return {
+
+                "success": True,
+
+                "data": data,
+
+                "cookies": [
+                    cookie.name
+                    for cookie
+                    in self.cookie_jar
+                ]
+            }
+
+
+        except Exception as e:
+
+            return {
+
+                "success": False,
+
+                "error":
+                    str(e)
+            }
+
+
+    # =====================================================
+    # SEARCH BOOKIECO MATCHES
     # =====================================================
 
     def search_match(
@@ -51,10 +179,51 @@ class BookieCoLiveFeed:
         query
     ):
 
+        # ---------------------------------------------
+        # STEP 1:
+        # Create BookieCo public session
+        # ---------------------------------------------
+
+        session_result = (
+            self.create_session()
+        )
+
+
+        if not session_result.get(
+            "success"
+        ):
+
+            return {
+
+                "success": False,
+
+                "stage":
+                    "session",
+
+                "error":
+                    session_result.get(
+                        "error",
+                        "Session creation failed"
+                    ),
+
+                "results":
+                    []
+            }
+
+
+        # ---------------------------------------------
+        # STEP 2:
+        # Search using SAME cookie-aware opener
+        # ---------------------------------------------
+
         payload = {
+
             "headers": {},
+
             "requestArguments": {
-                "query": str(query)
+
+                "query":
+                    str(query)
             }
         }
 
@@ -73,37 +242,23 @@ class BookieCoLiveFeed:
         )
 
 
-        request.add_header(
-            "Content-Type",
-            "application/json"
-        )
-
-        request.add_header(
-            "Accept",
-            "application/json"
-        )
-
-        request.add_header(
-            "Origin",
-            "https://agents.bookieco.com.cy"
-        )
-
-        request.add_header(
-            "Referer",
-            "https://agents.bookieco.com.cy/"
+        self._add_common_headers(
+            request
         )
 
 
         try:
 
-            with urllib.request.urlopen(
+            with self.http_opener.open(
                 request,
                 timeout=15
             ) as response:
 
                 raw_data = (
                     response.read()
-                    .decode("utf-8")
+                    .decode(
+                        "utf-8"
+                    )
                 )
 
 
@@ -112,17 +267,19 @@ class BookieCoLiveFeed:
             )
 
 
-            # =============================================
-            # REAL BOOKIECO SEARCH RESPONSE STRUCTURE
+            # =========================================
+            # REAL BOOKIECO SEARCH STRUCTURE
             #
             # returnValue
             #   -> results
             #       -> matches
-            # =============================================
+            # =========================================
 
-            return_value = data.get(
-                "returnValue",
-                {}
+            return_value = (
+                data.get(
+                    "returnValue",
+                    {}
+                )
             )
 
 
@@ -179,27 +336,17 @@ class BookieCoLiveFeed:
                     continue
 
 
-                match_id = (
-                    raw_match.get(
-                        "id"
-                    )
-                )
-
-
-                name = (
-                    raw_match.get(
-                        "name"
-                    )
-                )
-
-
                 result = {
 
                     "match_id":
-                        match_id,
+                        raw_match.get(
+                            "id"
+                        ),
 
                     "name":
-                        name,
+                        raw_match.get(
+                            "name"
+                        ),
 
                     "code":
                         raw_match.get(
@@ -216,6 +363,11 @@ class BookieCoLiveFeed:
                             "status"
                         ),
 
+                    "score":
+                        raw_match.get(
+                            "score"
+                        ),
+
                     "league_id":
                         raw_match.get(
                             "leagueId"
@@ -229,6 +381,16 @@ class BookieCoLiveFeed:
                     "league_name":
                         raw_match.get(
                             "leagueName"
+                        ),
+
+                    "category_id":
+                        raw_match.get(
+                            "categoryId"
+                        ),
+
+                    "category_code":
+                        raw_match.get(
+                            "categoryCode"
                         ),
 
                     "category_name":
@@ -279,6 +441,9 @@ class BookieCoLiveFeed:
 
                 "success": False,
 
+                "stage":
+                    "search",
+
                 "query":
                     query,
 
@@ -294,7 +459,7 @@ class BookieCoLiveFeed:
 
 
     # =====================================================
-    # SEARCH FOR FOOTBALL MATCH ONLY
+    # SEARCH FOOTBALL ONLY
     # =====================================================
 
     def search_football_match(
@@ -302,8 +467,10 @@ class BookieCoLiveFeed:
         query
     ):
 
-        result = self.search_match(
-            query
+        result = (
+            self.search_match(
+                query
+            )
         )
 
 
@@ -334,15 +501,15 @@ class BookieCoLiveFeed:
                 )
 
 
-        result[
-            "results"
-        ] = football_matches
-
-
-        result[
-            "matches_found"
-        ] = len(
+        result["results"] = (
             football_matches
+        )
+
+
+        result["matches_found"] = (
+            len(
+                football_matches
+            )
         )
 
 
@@ -350,7 +517,30 @@ class BookieCoLiveFeed:
 
 
     # =====================================================
-    # NORMAL LIVE FEED
+    # BUILD COOKIE HEADER FOR WEBSOCKET
+    # =====================================================
+
+    def _get_cookie_header(self):
+
+        parts = []
+
+
+        for cookie in self.cookie_jar:
+
+            parts.append(
+                cookie.name
+                + "="
+                + cookie.value
+            )
+
+
+        return "; ".join(
+            parts
+        )
+
+
+    # =====================================================
+    # GENERAL LIVE CONNECTION
     # =====================================================
 
     async def connect(
@@ -358,11 +548,54 @@ class BookieCoLiveFeed:
         listen_seconds=10
     ):
 
+        # Create public BookieCo session first
+        session_result = (
+            self.create_session()
+        )
+
+
+        if not session_result.get(
+            "success"
+        ):
+
+            return {
+
+                "success": False,
+
+                "stage":
+                    "session",
+
+                "error":
+                    session_result.get(
+                        "error"
+                    ),
+
+                "summary":
+                    self.reader.summary()
+            }
+
+
+        cookie_header = (
+            self._get_cookie_header()
+        )
+
+
+        headers = {}
+
+
+        if cookie_header:
+
+            headers["Cookie"] = (
+                cookie_header
+            )
+
+
         try:
 
             async with websockets.connect(
                 BOOKIECO_WS_URL,
-                origin="https://agents.bookieco.com.cy",
+                origin=BOOKIECO_BASE_URL,
+                additional_headers=headers,
                 max_size=None
             ) as websocket:
 
@@ -391,6 +624,9 @@ class BookieCoLiveFeed:
 
                 "success": False,
 
+                "stage":
+                    "websocket",
+
                 "error":
                     str(e),
 
@@ -417,7 +653,7 @@ class BookieCoLiveFeed:
 
 
     # =====================================================
-    # REQUEST SPECIFIC MATCH
+    # REQUEST SPECIFIC MATCH + MARKETS
     # =====================================================
 
     async def get_specific_match(
@@ -431,6 +667,57 @@ class BookieCoLiveFeed:
         )
 
 
+        # ---------------------------------------------
+        # STEP 1:
+        # Create BookieCo public session
+        # ---------------------------------------------
+
+        session_result = (
+            self.create_session()
+        )
+
+
+        if not session_result.get(
+            "success"
+        ):
+
+            return {
+
+                "success": False,
+
+                "stage":
+                    "session",
+
+                "match_id":
+                    match_id,
+
+                "error":
+                    session_result.get(
+                        "error"
+                    )
+            }
+
+
+        # ---------------------------------------------
+        # STEP 2:
+        # Use same cookies in WebSocket
+        # ---------------------------------------------
+
+        cookie_header = (
+            self._get_cookie_header()
+        )
+
+
+        headers = {}
+
+
+        if cookie_header:
+
+            headers["Cookie"] = (
+                cookie_header
+            )
+
+
         internal_id = (
             self._create_internal_id()
         )
@@ -440,7 +727,8 @@ class BookieCoLiveFeed:
 
             async with websockets.connect(
                 BOOKIECO_WS_URL,
-                origin="https://agents.bookieco.com.cy",
+                origin=BOOKIECO_BASE_URL,
+                additional_headers=headers,
                 max_size=None
             ) as websocket:
 
@@ -496,6 +784,9 @@ class BookieCoLiveFeed:
             return {
 
                 "success": False,
+
+                "stage":
+                    "websocket",
 
                 "match_id":
                     match_id,
@@ -564,6 +855,7 @@ class BookieCoLiveFeed:
             message = (
                 await websocket.recv()
             )
+
 
             self.reader.process_message(
                 message
