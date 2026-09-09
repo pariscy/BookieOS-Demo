@@ -1,5 +1,6 @@
 import streamlit as st
 from openai import OpenAI
+from weekly_match_scout import run_weekly_match_scout
 
 st.set_page_config(
     page_title="BookieOS",
@@ -44,14 +45,54 @@ with main:
         with st.chat_message("user"):
             st.write(prompt)
 
-        # Send the conversation to the real AI
         try:
-            response = client.responses.create(
-                model="gpt-5.6-luna",
-                instructions="""
+
+            # Decide whether this request belongs to the Match Scout
+            prompt_lower = prompt.lower()
+
+            scout_words = [
+                "weekly match scout",
+                "matches",
+                "fixtures",
+                "football",
+                "next week",
+                "champions league",
+                "premier league",
+                "europa league",
+                "conference league",
+                "la liga",
+                "serie a",
+                "bundesliga",
+                "formula 1",
+                "f1"
+            ]
+
+            use_scout = any(word in prompt_lower for word in scout_words)
+
+            # ---------- WEEKLY MATCH SCOUT ----------
+            if use_scout:
+
+                with st.spinner("⚽ Weekly Match Scout is working..."):
+
+                    scout_result = run_weekly_match_scout(
+                        client,
+                        prompt
+                    )
+
+                answer = (
+                    "⚽ **Weekly Match Scout report**\n\n"
+                    + scout_result
+                )
+
+            # ---------- BOOKIEOS ----------
+            else:
+
+                response = client.responses.create(
+                    model="gpt-5.6-luna",
+                    instructions="""
 You are BookieOS, the internal AI operating system for BookieCo.
 
-You coordinate specialist AI agents for the company.
+Your job is to coordinate specialist AI agents and communicate with the user.
 
 Current Marketing agents:
 - Marketing Manager
@@ -59,25 +100,27 @@ Current Marketing agents:
 - Bet Researcher
 - Promotion Selector
 
+The Weekly Match Scout is now connected.
+
+The other specialist agents are not connected yet.
+
 Be concise, professional and helpful.
 
-IMPORTANT:
-The specialist agents are not connected yet.
-Never pretend that an agent has performed work when it has not.
+Never pretend that an unconnected agent has completed work.
 """,
-                input=[
-                    {
-                        "role": message["role"],
-                        "content": message["content"]
-                    }
-                    for message in st.session_state.messages
-                ]
-            )
+                    input=[
+                        {
+                            "role": message["role"],
+                            "content": message["content"]
+                        }
+                        for message in st.session_state.messages
+                    ]
+                )
 
-            answer = response.output_text
+                answer = response.output_text
 
         except Exception as e:
-            answer = "BookieOS could not contact the AI service. Error: " + str(e)
+            answer = "BookieOS encountered an error: " + str(e)
 
         st.session_state.messages.append({
             "role": "assistant",
@@ -92,16 +135,16 @@ with agents:
     st.subheader("⚡ LIVE AGENTS")
 
     st.markdown("**🤖 Marketing Manager**")
-    st.success("● READY")
+    st.warning("● NOT CONNECTED")
 
     st.markdown("**⚽ Weekly Match Scout**")
-    st.success("● READY")
+    st.success("● CONNECTED")
 
     st.markdown("**🔎 Bet Researcher**")
-    st.success("● READY")
+    st.warning("● NOT CONNECTED")
 
     st.markdown("**📢 Promotion Selector**")
-    st.success("● READY")
+    st.warning("● NOT CONNECTED")
 
     st.divider()
 
