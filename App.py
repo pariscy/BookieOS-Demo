@@ -43,9 +43,7 @@ main, agents = st.columns(
 
 with main:
 
-    st.subheader(
-        "🤖 BookieOS"
-    )
+    st.subheader("🤖 BookieOS")
 
     st.info(
         "Good afternoon, Paris.\n\n"
@@ -53,7 +51,9 @@ with main:
     )
 
 
-    # ---------- MEMORY ----------
+    # =====================================================
+    # CHAT MEMORY
+    # =====================================================
 
     if "messages" not in st.session_state:
         st.session_state.messages = []
@@ -124,7 +124,7 @@ with main:
 
 
     # =====================================================
-    # PROCESS
+    # PROCESS MESSAGE
     # =====================================================
 
     if prompt:
@@ -135,13 +135,9 @@ with main:
         })
 
 
-        with st.chat_message(
-            "user"
-        ):
+        with st.chat_message("user"):
 
-            st.write(
-                prompt
-            )
+            st.write(prompt)
 
 
         try:
@@ -150,10 +146,6 @@ with main:
                 prompt.lower()
             )
 
-
-            # =================================================
-            # ROUTING
-            # =================================================
 
             scout_words = [
 
@@ -173,7 +165,6 @@ with main:
                 "europa league",
                 "conference league",
 
-                # Greek
                 "βρες αγώνες",
                 "βρες μου αγώνες",
                 "καλύτερους αγώνες",
@@ -191,7 +182,7 @@ with main:
 
 
             # =================================================
-            # AGENT 1
+            # WEEKLY MATCH SCOUT
             # =================================================
 
             if use_scout:
@@ -209,16 +200,14 @@ with main:
 
 
                 # =================================================
-                # BOOKIECO LIVE DATA
+                # CURRENT BOOKIECO SNAPSHOT
                 # =================================================
 
                 with st.spinner(
                     "📡 Checking BookieCo live markets..."
                 ):
 
-                    feed = (
-                        BookieCoLiveFeed()
-                    )
+                    feed = BookieCoLiveFeed()
 
 
                     try:
@@ -239,16 +228,10 @@ with main:
                         }
 
 
-                # =================================================
-                # BUILD CLEAN BOOKIECO SNAPSHOT
-                # =================================================
-
                 bookieco_snapshot = []
 
 
-                if feed_result.get(
-                    "success"
-                ):
+                if feed_result.get("success"):
 
                     for match in (
                         feed.reader.matches.values()
@@ -331,11 +314,11 @@ with main:
 
 
                 # =================================================
-                # AGENT 2
+                # BET RESEARCHER
                 # =================================================
 
                 with st.spinner(
-                    "🔎 Bet Researcher is analysing and checking BookieCo..."
+                    "🔎 Bet Researcher is analysing..."
                 ):
 
                     researcher_task = f"""
@@ -352,7 +335,7 @@ END SCOUT REPORT
 ========================
 
 
-Below is a LIVE SNAPSHOT received directly from BookieCo's betting feed.
+Below is a live BookieCo snapshot:
 
 ========================
 BOOKIECO LIVE DATA
@@ -365,82 +348,35 @@ END BOOKIECO DATA
 ========================
 
 
-Analyse EVERY proposed football bet from the Scout report.
+Analyse EVERY proposed football bet.
 
-For each match:
+For each proposed bet:
 
-1. Identify the Scout's proposed betting market.
+- Research whether it makes statistical sense.
+- Rate it STRONG, REASONABLE or WEAK.
+- Prefer interesting marketing bets.
+- General target estimated decimal odds: 2.00 to 6.00.
+- Avoid boring low-price bets when possible.
+- Suggest a better alternative when appropriate.
+- Never invent BookieCo odds.
+- Never invent BookieCo markets.
 
-2. Research whether the betting idea makes statistical sense.
-
-3. Rate it:
-
-STRONG
-REASONABLE
-WEAK
-
-4. Estimate the price profile:
-
-TOO LOW
-GOOD MARKETING RANGE
-HIGH RISK - HIGH PRICE
-UNKNOWN
-
-5. Prefer interesting marketing bets likely to fall roughly between
-decimal odds 2.00 and 6.00.
-
-6. If the proposed market looks too low or weak, suggest a better
-alternative.
-
-7. Check the BOOKIECO LIVE DATA for the same match.
-
-8. If the exact match appears in the BookieCo data, report:
-
-BOOKIECO MATCH:
-FOUND
-
-and show the BookieCo match ID.
-
-9. If the match does not appear in this live snapshot, report:
-
-BOOKIECO MATCH:
-NOT FOUND IN CURRENT LIVE SNAPSHOT
-
-Do NOT claim that BookieCo does not offer the match.
-The current WebSocket snapshot may not contain every event.
-
-10. marketTypeId 3 is known to represent the standard 1X2 market.
+marketTypeId 3 is confirmed as standard football 1X2.
 
 For marketTypeId 3:
 
-- outcome 1 = Home
-- outcome X = Draw
-- outcome 2 = Away
+1 = Home
+X = Draw
+2 = Away
 
-You may report the actual BookieCo odds from this market when present.
+Other BookieCo marketTypeId values are not mapped yet.
 
-11. For OTHER marketTypeIds:
+Do not guess their meaning.
 
-DO NOT guess what the market name means yet.
-
-We have not yet connected BookieCo's full market-type dictionary.
-
-Therefore do NOT claim an advanced proposed bet is verified only because
-an unknown marketTypeId exists.
-
-Use:
+If an advanced market cannot yet be verified, say:
 
 ADVANCED MARKET VERIFICATION:
 WAITING FOR MARKET TYPE MAPPING
-
-12. Never invent BookieCo odds.
-
-13. Never invent BookieCo market names.
-
-14. If actual BookieCo data verifies something, clearly distinguish it
-from your web research.
-
-Return everything in the same Monday-Sunday order as the Scout report.
 """
 
 
@@ -451,10 +387,6 @@ Return everything in the same Monday-Sunday order as the Scout report.
                         )
                     )
 
-
-                # =================================================
-                # FINAL RESULT
-                # =================================================
 
                 answer = (
                     "⚽ **Weekly Match Scout report**"
@@ -481,46 +413,22 @@ Return everything in the same Monday-Sunday order as the Scout report.
                         instructions="""
 You are BookieOS, the internal AI operating system for BookieCo.
 
-CONNECTED AGENTS:
+Connected:
 
-1. Weekly Match Scout
-2. Bet Researcher
+- Weekly Match Scout
+- Bet Researcher
+- BookieCo live-data connector
 
-AUTOMATIC WORKFLOW:
-
-User
-→ BookieOS
-→ Weekly Match Scout
-→ BookieCo live market feed
-→ Bet Researcher
-→ BookieOS
-→ User
-
-The Bet Researcher now receives a live BookieCo data snapshot.
-
-IMPORTANT:
-
-The live BookieCo connection is working.
-
-However, the complete mapping between BookieCo marketTypeId values
-and human-readable betting-market names is not connected yet.
-
-Therefore:
-
-- Never guess market names from unknown marketTypeId values.
-- Never invent BookieCo odds.
-- marketTypeId 3 is known to be standard 1X2.
-- Advanced market availability still requires market-type mapping.
-
-NOT YET CONNECTED:
+Not yet connected:
 
 - Marketing Manager
 - Promotion Selector
 
-LANGUAGE:
+BookieCo marketTypeId 3 is confirmed as standard 1X2.
+
+Never invent BookieCo odds or market availability.
 
 If the user speaks Greek, respond in Greek.
-
 If the user speaks English, respond in English.
 
 Be concise and professional.
@@ -561,13 +469,9 @@ Be concise and professional.
         })
 
 
-        with st.chat_message(
-            "assistant"
-        ):
+        with st.chat_message("assistant"):
 
-            st.write(
-                answer
-            )
+            st.write(answer)
 
 
 # =========================================================
@@ -621,7 +525,7 @@ with agents:
 
 
     # =====================================================
-    # BOOKIECO MARKET FEED
+    # BOOKIECO SEARCH TEST
     # =====================================================
 
     st.markdown(
@@ -629,185 +533,216 @@ with agents:
     )
 
 
-    # =====================================================
-    # SPECIFIC OLYMPIACOS ODDS TEST
-    # =====================================================
-
     if st.button(
-        "🎯 Test Olympiacos Odds"
+        "🔎 Search BookieCo: Olympiacos"
     ):
 
         with st.spinner(
-            "Requesting Olympiacos match directly from BookieCo..."
+            "Searching BookieCo for Olympiacos..."
         ):
 
-            test_feed = (
+            search_feed = (
                 BookieCoLiveFeed()
             )
 
 
-            try:
-
-                specific_result = (
-                    asyncio.run(
-                        test_feed.get_specific_match(
-                            4493001,
-                            listen_seconds=10
-                        )
-                    )
+            search_result = (
+                search_feed.search_match(
+                    "Olympia"
                 )
-
-            except Exception as e:
-
-                specific_result = {
-                    "success": False,
-                    "error": str(e)
-                }
+            )
 
 
-        if specific_result.get(
+        if search_result.get(
             "success"
         ):
 
-            match = (
-                specific_result.get(
-                    "match"
-                )
-            )
-
-
-            market_1x2 = (
-                specific_result.get(
-                    "market_1x2"
-                )
-            )
-
-
-            markets_received = (
-                specific_result.get(
-                    "markets_received",
+            matches_found = (
+                search_result.get(
+                    "matches_found",
                     0
                 )
             )
 
 
-            if match:
+            st.success(
+                "✅ BookieCo search connected"
+            )
 
-                competitors = (
-                    match.get(
-                        "competitors",
-                        []
-                    )
+
+            st.write(
+                "Matches found:",
+                matches_found
+            )
+
+
+            results = (
+                search_result.get(
+                    "results",
+                    []
                 )
+            )
 
 
-                st.success(
-                    "✅ Requested match received"
-                )
+            if results:
 
+                for result in results:
 
-                st.write(
-                    "Match:",
-                    " vs ".join(
-                        str(x)
-                        for x in competitors
-                    )
-                )
-
-
-                st.write(
-                    "Match ID:",
-                    match.get(
-                        "match_id"
-                    )
-                )
-
-
-                st.write(
-                    "Markets received:",
-                    markets_received
-                )
-
-
-            else:
-
-                st.warning(
-                    "Connected, but the requested match was not returned."
-                )
-
-
-            if market_1x2:
-
-                st.markdown(
-                    "### 💰 BookieCo 1X2 Odds"
-                )
-
-
-                for selection in (
-                    market_1x2.get(
-                        "selections",
-                        []
-                    )
-                ):
-
-                    outcome = (
-                        selection.get(
-                            "outcome"
+                    match = (
+                        result.get(
+                            "match",
+                            {}
                         )
                     )
 
 
-                    odd = (
-                        selection.get(
-                            "odds"
+                    competitors = (
+                        match.get(
+                            "competitors",
+                            []
                         )
                     )
 
 
-                    if outcome == "1":
-
-                        name = "Home"
-
-
-                    elif outcome == "X":
-
-                        name = "Draw"
+                    match_id = (
+                        result.get(
+                            "match_id"
+                        )
+                    )
 
 
-                    elif outcome == "2":
+                    market_1x2 = (
+                        result.get(
+                            "market_1x2"
+                        )
+                    )
 
-                        name = "Away"
+
+                    st.markdown("---")
+
+
+                    if len(
+                        competitors
+                    ) >= 2:
+
+                        match_name = (
+                            str(
+                                competitors[0]
+                            )
+                            + " vs "
+                            + str(
+                                competitors[1]
+                            )
+                        )
+
+                    else:
+
+                        match_name = (
+                            str(
+                                competitors
+                            )
+                        )
+
+
+                    st.markdown(
+                        "### ⚽ "
+                        + match_name
+                    )
+
+
+                    st.write(
+                        "BookieCo Match ID:",
+                        match_id
+                    )
+
+
+                    st.write(
+                        "Available markets:",
+                        match.get(
+                            "number_of_markets"
+                        )
+                    )
+
+
+                    # =====================================
+                    # REAL 1X2 ODDS
+                    # =====================================
+
+                    if market_1x2:
+
+                        st.markdown(
+                            "#### 💰 Real BookieCo 1X2 Odds"
+                        )
+
+
+                        odds = {}
+
+
+                        for selection in (
+                            market_1x2.get(
+                                "selections",
+                                []
+                            )
+                        ):
+
+                            outcome = (
+                                selection.get(
+                                    "outcome"
+                                )
+                            )
+
+                            odd = (
+                                selection.get(
+                                    "odds"
+                                )
+                            )
+
+                            odds[
+                                outcome
+                            ] = odd
+
+
+                        st.write(
+                            "🏠 Home:",
+                            odds.get("1")
+                        )
+
+
+                        st.write(
+                            "🤝 Draw:",
+                            odds.get("X")
+                        )
+
+
+                        st.write(
+                            "✈️ Away:",
+                            odds.get("2")
+                        )
 
 
                     else:
 
-                        name = str(
-                            outcome
+                        st.warning(
+                            "Match found, but 1X2 odds were not included in the search response."
                         )
-
-
-                    st.write(
-                        name + ":",
-                        odd
-                    )
 
 
             else:
 
                 st.warning(
-                    "The 1X2 market was not received."
+                    "BookieCo responded, but no matching events were parsed."
                 )
 
 
         else:
 
             st.error(
-                "❌ Specific match request failed"
+                "❌ BookieCo search failed"
             )
 
 
             st.write(
-                specific_result.get(
+                search_result.get(
                     "error",
                     "Unknown error"
                 )
@@ -818,7 +753,7 @@ with agents:
 
 
     # =====================================================
-    # GENERAL LIVE FEED TEST
+    # NORMAL LIVE FEED TEST
     # =====================================================
 
     if st.button(
@@ -861,9 +796,11 @@ with agents:
             )
 
 
-            summary = result.get(
-                "summary",
-                {}
+            summary = (
+                result.get(
+                    "summary",
+                    {}
+                )
             )
 
 
@@ -885,9 +822,11 @@ with agents:
             )
 
 
-            matches = result.get(
-                "matches",
-                []
+            matches = (
+                result.get(
+                    "matches",
+                    []
+                )
             )
 
 
@@ -938,13 +877,16 @@ with agents:
 
                     else:
 
-                        match_name = str(
-                            competitors
+                        match_name = (
+                            str(
+                                competitors
+                            )
                         )
 
 
                     st.write(
-                        "⚽ " + match_name
+                        "⚽ "
+                        + match_name
                     )
 
 
