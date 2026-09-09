@@ -22,14 +22,17 @@ class BookieCoLiveFeed:
         """
 
         try:
+
             async with websockets.connect(
                 BOOKIECO_WS_URL,
-                origin="https://agents.bookieco.com.cy"
+                origin="https://agents.bookieco.com.cy",
+                max_size=None
             ) as websocket:
 
                 self.connected = True
 
                 try:
+
                     await asyncio.wait_for(
                         self._listen(websocket),
                         timeout=listen_seconds
@@ -37,6 +40,7 @@ class BookieCoLiveFeed:
 
                 except asyncio.TimeoutError:
                     pass
+
 
         except Exception as e:
 
@@ -49,11 +53,14 @@ class BookieCoLiveFeed:
                 "summary": self.reader.summary()
             }
 
+
         self.connected = False
 
         return {
             "success": True,
-            "matches": list(self.reader.matches.values()),
+            "matches": list(
+                self.reader.matches.values()
+            ),
             "summary": self.reader.summary()
         }
 
@@ -66,22 +73,33 @@ class BookieCoLiveFeed:
 
             try:
                 data = json.loads(message)
+
             except Exception:
                 continue
+
 
             self.reader.process_message(data)
 
 
     def find_match(self, team_name):
 
-        return self.reader.find_match(team_name)
+        return self.reader.find_match(
+            team_name
+        )
 
 
     def get_markets(self, match_id):
 
-        return self.reader.get_markets(match_id)
+        return self.reader.get_markets(
+            match_id
+        )
 
 
-    def get_match_with_markets(self, match_id):
+    def get_match_with_markets(
+        self,
+        match_id
+    ):
 
-        return self.reader.get_match_with_markets(match_id)
+        return self.reader.get_match_with_markets(
+            match_id
+        )
