@@ -10,12 +10,16 @@ class BookieCoMarketReader:
 
     def process_message(self, raw_message):
         """
-        Reads a BookieCo WebSocket message and stores
-        useful match and market information.
+        Reads BookieCo WebSocket data.
+
+        It supports:
+        - a single object
+        - {"messages": [...]}
+        - lists of objects
+        - nested match / market objects
         """
 
         try:
-
             if isinstance(raw_message, str):
                 data = json.loads(raw_message)
             else:
@@ -25,104 +29,101 @@ class BookieCoMarketReader:
             return None
 
 
-        if not isinstance(data, dict):
-            return None
+        self._scan(data)
+
+        return True
 
 
-        object_type = data.get("object")
+    def _scan(self, value):
+
+        if isinstance(value, dict):
+
+            object_type = value.get("object")
 
 
-        # ---------- MATCH ----------
-        if object_type == "match":
+            # ---------- MATCH ----------
+            if object_type == "match":
 
-            match_id = data.get("id")
+                match_id = value.get("id")
 
-            if match_id is None:
-                return None
+                if match_id is not None:
 
-            competitors = data.get("competitors", [])
+                    match = {
+                        "match_id": match_id,
+                        "uuid": value.get("uuid"),
+                        "tournament_id": value.get("tournamentId"),
+                        "competitors": value.get("competitors", []),
+                        "start_time": value.get("startTs"),
+                        "number_of_markets": value.get("nrMarkets"),
+                        "market_types": value.get("marketTypes", []),
+                        "is_live": value.get("isLive"),
+                        "is_suspended": value.get("isSuspended"),
+                    }
 
-            match = {
-                "match_id": match_id,
-                "uuid": data.get("uuid"),
-                "tournament_id": data.get("tournamentId"),
-                "competitors": competitors,
-                "start_time": data.get("startTs"),
-                "number_of_markets": data.get("nrMarkets"),
-            }
-
-            self.matches[match_id] = match
-
-            return {
-                "type": "match",
-                "data": match
-            }
+                    self.matches[match_id] = match
 
 
-        # ---------- MARKET ----------
-        if object_type == "market":
+            # ---------- MARKET ----------
+            elif object_type == "market":
 
-            market_id = data.get("id")
-            match_id = data.get("matchId")
+                market_id = value.get("id")
+                match_id = value.get("matchId")
 
-            if market_id is None or match_id is None:
-                return None
+                if market_id is not None and match_id is not None:
 
-            selections = []
+                    selections = []
 
-            for selection in data.get("selections", []):
+                    for selection in value.get("selections", []):
 
-                selections.append({
-                    "selection_id": selection.get("id"),
-                    "outcome": selection.get("outcome"),
-                    "odds": selection.get("odds"),
-                    "probability": selection.get("probability"),
-                })
-
-
-            market = {
-                "market_id": market_id,
-                "match_id": match_id,
-                "market_type_id": data.get("marketTypeId"),
-                "special": data.get("special"),
-                "is_suspended": data.get("isSuspended"),
-                "selections": selections,
-            }
+                        selections.append({
+                            "selection_id": selection.get("id"),
+                            "outcome": selection.get("outcome"),
+                            "odds": selection.get("odds"),
+                            "probability": selection.get("probability"),
+                        })
 
 
-            if match_id not in self.markets:
-                self.markets[match_id] = []
+                    market = {
+                        "market_id": market_id,
+                        "match_id": match_id,
+                        "market_type_id": value.get("marketTypeId"),
+                        "special": value.get("special"),
+                        "is_suspended": value.get("isSuspended"),
+                        "max_payout": value.get("maxPayout"),
+                        "selections": selections,
+                    }
 
 
-            # Replace an existing version of the same market
-            # instead of storing duplicates.
-
-            replaced = False
-
-            for index, existing_market in enumerate(
-                self.markets[match_id]
-            ):
-
-                if existing_market["market_id"] == market_id:
-
-                    self.markets[match_id][index] = market
-
-                    replaced = True
-
-                    break
+                    if match_id not in self.markets:
+                        self.markets[match_id] = []
 
 
-            if not replaced:
-                self.markets[match_id].append(market)
+                    replaced = False
+
+                    for index, existing_market in enumerate(
+                        self.markets[match_id]
+                    ):
+
+                        if existing_market["market_id"] == market_id:
+
+                            self.markets[match_id][index] = market
+                            replaced = True
+                            break
 
 
-            return {
-                "type": "market",
-                "data": market
-            }
+                    if not replaced:
+                        self.markets[match_id].append(market)
 
 
-        return None
+            # Search all nested values too
+            for nested_value in value.values():
+                self._scan(nested_value)
+
+
+        elif isinstance(value, list):
+
+            for item in value:
+                self._scan(item)
 
 
     def get_match(self, match_id):
@@ -150,7 +151,7 @@ class BookieCoMarketReader:
 
     def find_match(self, team_name):
 
-        team_name = team_name.lower()
+        team_name = team_name.lower().strip()
 
         results = []
 
@@ -163,10 +164,64 @@ class BookieCoMarketReader:
                 if team_name in str(competitor).lower():
 
                     results.append(match)
-
                     break
 
         return results
+
+
+    def find_exact_match(self, team_a, team_b):
+
+        team_a = team_a.lower().strip()
+        team_b = team_b.lower().strip()
+
+        results = []
+
+        for match in self.matches.values():
+
+            competitors = [
+                str(x).lower()
+                for x in match.get("competitors", [])
+            ]
+
+            if len(competitors) < 2:
+                continue
+
+
+            first = competitors[0]
+            second = competitors[1]
+
+
+            normal_order = (
+                team_a in first
+                and team_b in second
+            )
+
+            reverse_order = (
+                team_b in first
+                and team_a in second
+            )
+
+
+            if normal_order or reverse_order:
+                results.append(match)
+
+
+        return results
+
+
+    def get_1x2_market(self, match_id):
+
+        """
+        From the BookieCo data we have already seen,
+        marketTypeId 3 is the standard 1X2 market.
+        """
+
+        for market in self.get_markets(match_id):
+
+            if market.get("market_type_id") == 3:
+                return market
+
+        return None
 
 
     def summary(self):
