@@ -324,7 +324,6 @@ with main:
                         })
 
 
-                # Keep the data sent to the AI manageable
                 bookieco_text = json.dumps(
                     bookieco_snapshot,
                     ensure_ascii=False
@@ -413,6 +412,7 @@ The current WebSocket snapshot may not contain every event.
 10. marketTypeId 3 is known to represent the standard 1X2 market.
 
 For marketTypeId 3:
+
 - outcome 1 = Home
 - outcome X = Draw
 - outcome 2 = Away
@@ -621,13 +621,205 @@ with agents:
 
 
     # =====================================================
-    # BOOKIECO FEED TEST
+    # BOOKIECO MARKET FEED
     # =====================================================
 
     st.markdown(
         "**📡 BookieCo Market Feed**"
     )
 
+
+    # =====================================================
+    # SPECIFIC OLYMPIACOS ODDS TEST
+    # =====================================================
+
+    if st.button(
+        "🎯 Test Olympiacos Odds"
+    ):
+
+        with st.spinner(
+            "Requesting Olympiacos match directly from BookieCo..."
+        ):
+
+            test_feed = (
+                BookieCoLiveFeed()
+            )
+
+
+            try:
+
+                specific_result = (
+                    asyncio.run(
+                        test_feed.get_specific_match(
+                            4493001,
+                            listen_seconds=10
+                        )
+                    )
+                )
+
+            except Exception as e:
+
+                specific_result = {
+                    "success": False,
+                    "error": str(e)
+                }
+
+
+        if specific_result.get(
+            "success"
+        ):
+
+            match = (
+                specific_result.get(
+                    "match"
+                )
+            )
+
+
+            market_1x2 = (
+                specific_result.get(
+                    "market_1x2"
+                )
+            )
+
+
+            markets_received = (
+                specific_result.get(
+                    "markets_received",
+                    0
+                )
+            )
+
+
+            if match:
+
+                competitors = (
+                    match.get(
+                        "competitors",
+                        []
+                    )
+                )
+
+
+                st.success(
+                    "✅ Requested match received"
+                )
+
+
+                st.write(
+                    "Match:",
+                    " vs ".join(
+                        str(x)
+                        for x in competitors
+                    )
+                )
+
+
+                st.write(
+                    "Match ID:",
+                    match.get(
+                        "match_id"
+                    )
+                )
+
+
+                st.write(
+                    "Markets received:",
+                    markets_received
+                )
+
+
+            else:
+
+                st.warning(
+                    "Connected, but the requested match was not returned."
+                )
+
+
+            if market_1x2:
+
+                st.markdown(
+                    "### 💰 BookieCo 1X2 Odds"
+                )
+
+
+                for selection in (
+                    market_1x2.get(
+                        "selections",
+                        []
+                    )
+                ):
+
+                    outcome = (
+                        selection.get(
+                            "outcome"
+                        )
+                    )
+
+
+                    odd = (
+                        selection.get(
+                            "odds"
+                        )
+                    )
+
+
+                    if outcome == "1":
+
+                        name = "Home"
+
+
+                    elif outcome == "X":
+
+                        name = "Draw"
+
+
+                    elif outcome == "2":
+
+                        name = "Away"
+
+
+                    else:
+
+                        name = str(
+                            outcome
+                        )
+
+
+                    st.write(
+                        name + ":",
+                        odd
+                    )
+
+
+            else:
+
+                st.warning(
+                    "The 1X2 market was not received."
+                )
+
+
+        else:
+
+            st.error(
+                "❌ Specific match request failed"
+            )
+
+
+            st.write(
+                specific_result.get(
+                    "error",
+                    "Unknown error"
+                )
+            )
+
+
+    st.divider()
+
+
+    # =====================================================
+    # GENERAL LIVE FEED TEST
+    # =====================================================
 
     if st.button(
         "🧪 Test BookieCo Live Feed"
@@ -758,7 +950,9 @@ with agents:
 
                     st.caption(
                         "Match ID: "
-                        + str(match_id)
+                        + str(
+                            match_id
+                        )
                         + " | Markets: "
                         + str(
                             number_of_markets
