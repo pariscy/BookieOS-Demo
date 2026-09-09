@@ -3,13 +3,10 @@ from openai import OpenAI
 
 from weekly_match_scout import run_weekly_match_scout
 from sports_news_monitor import run_sports_news_monitor
+from competitor_watch import run_competitor_watch
 from bet_researcher import run_bet_researcher
 from marketing_manager import run_marketing_manager
 
-
-# =========================================================
-# PAGE
-# =========================================================
 
 st.set_page_config(
     page_title="BookieOS",
@@ -18,39 +15,22 @@ st.set_page_config(
 )
 
 
-# =========================================================
-# OPENAI
-# =========================================================
-
 client = OpenAI(
     api_key=st.secrets["OPENAI_API_KEY"]
 )
 
 
-# =========================================================
-# SESSION STATE
-# =========================================================
-
 if "sports_news_report" not in st.session_state:
     st.session_state.sports_news_report = None
 
+if "competitor_report" not in st.session_state:
+    st.session_state.competitor_report = None
 
-# =========================================================
-# HEADER
-# =========================================================
 
 st.title("◉ BOOKIEOS")
-
-st.caption(
-    "BookieCo Artificial Intelligence Operating System"
-)
-
+st.caption("BookieCo Artificial Intelligence Operating System")
 st.divider()
 
-
-# =========================================================
-# LAYOUT
-# =========================================================
 
 main_column, agent_column = st.columns([3, 1])
 
@@ -63,14 +43,8 @@ with main_column:
 
     st.subheader("BookieOS")
 
-    st.caption(
-        "Ask BookieOS in English or Greek."
-    )
+    st.caption("Ask BookieOS in English or Greek.")
 
-
-    # -----------------------------------------------------
-    # VOICE INPUT
-    # -----------------------------------------------------
 
     voice_prompt = None
 
@@ -102,10 +76,6 @@ with main_column:
             )
 
 
-    # -----------------------------------------------------
-    # TEXT INPUT
-    # -----------------------------------------------------
-
     text_prompt = st.chat_input(
         "Ask BookieOS..."
     )
@@ -113,17 +83,11 @@ with main_column:
     user_prompt = text_prompt or voice_prompt
 
 
-    # -----------------------------------------------------
-    # REQUEST
-    # -----------------------------------------------------
-
     if user_prompt:
 
         with st.chat_message("user"):
 
-            st.write(
-                user_prompt
-            )
+            st.write(user_prompt)
 
 
         with st.chat_message("assistant"):
@@ -171,10 +135,6 @@ with main_column:
 
                 try:
 
-                    # =========================================
-                    # AGENT 1 — WEEKLY MATCH SCOUT
-                    # =========================================
-
                     with st.spinner(
                         "🔎 Weekly Match Scout is researching..."
                     ):
@@ -195,10 +155,6 @@ with main_column:
 
                     st.divider()
 
-
-                    # =========================================
-                    # AGENT 2 — BET RESEARCHER
-                    # =========================================
 
                     with st.spinner(
                         "🧠 Bet Researcher is analysing..."
@@ -279,10 +235,6 @@ SCOUT REPORT:
                     st.divider()
 
 
-                    # =========================================
-                    # AGENT 3 — MARKETING MANAGER
-                    # =========================================
-
                     with st.spinner(
                         "📣 Marketing Manager is building the weekly plan..."
                     ):
@@ -335,46 +287,35 @@ a retail betting company in Cyprus.
 CONNECTED MARKETING AGENTS:
 
 1. Weekly Match Scout
-
-Finds upcoming sporting events that may be useful
-for BookieCo marketing.
-
 2. Bet Researcher
-
-Researches teams, players, statistics and proposed
-football betting ideas.
-
 3. Marketing Manager
 
-Uses the Scout and Researcher reports to decide
-what BookieCo should actually market.
+INDEPENDENT MANUAL AGENTS:
 
-INDEPENDENT SPORTS INTELLIGENCE AGENT:
+4. Sports News Monitor
 
-Sports News Monitor
+Checks important current sports news such as:
 
-The Sports News Monitor is NOT automatically part
-of the weekly marketing workflow.
-
-It is manually activated from the BookieOS website.
-
-It searches for important current sports news such as:
-
-- major injuries
+- injuries
 - suspensions
 - doubtful players
 - players ruled out
-- important player returns
 - manager changes
-- match postponements
-- match cancellations
+- postponements
 - major squad news
 
-PLANNED MARKETING AGENTS:
+5. Competitor Watch
 
-- Promotion Selector
-- Creative Director
-- Social Media Writer
+Checks current public marketing activity from
+betting competitors relevant to Cyprus.
+
+It can research:
+
+- promotions
+- campaigns
+- major sporting events being promoted
+- unusual betting concepts
+- competitor marketing trends
 
 BookieOS currently does NOT have access to
 BookieCo live betting markets or odds.
@@ -454,11 +395,20 @@ with agent_column:
     )
 
 
+    st.write(
+        "🟢 🏆 Competitor Watch"
+    )
+
+    st.caption(
+        "CONNECTED · MANUAL"
+    )
+
+
     st.divider()
 
 
     # =====================================================
-    # SPORTS NEWS BUTTON
+    # SPORTS NEWS MONITOR
     # =====================================================
 
     st.subheader(
@@ -557,10 +507,6 @@ If there are no important developments, say so clearly.
             )
 
 
-    # =====================================================
-    # SPORTS NEWS BOX
-    # =====================================================
-
     if st.session_state.sports_news_report:
 
         with st.container(
@@ -584,6 +530,73 @@ If there are no important developments, say so clearly.
 
             st.caption(
                 "No sports intelligence check has been run yet."
+            )
+
+
+    st.divider()
+
+
+    # =====================================================
+    # COMPETITOR WATCH
+    # =====================================================
+
+    st.subheader(
+        "🏆 Competitor Intelligence"
+    )
+
+    st.caption(
+        "Check recent promotions and marketing activity from competitors."
+    )
+
+
+    if st.button(
+        "🏆 Check Competitors",
+        use_container_width=True
+    ):
+
+        try:
+
+            with st.spinner(
+                "Checking competitor activity..."
+            ):
+
+                st.session_state.competitor_report = (
+                    run_competitor_watch(
+                        client
+                    )
+                )
+
+
+        except Exception as e:
+
+            st.error(
+                f"Competitor Watch error: {e}"
+            )
+
+
+    if st.session_state.competitor_report:
+
+        with st.container(
+            border=True
+        ):
+
+            st.markdown(
+                "### Latest Competitor Report"
+            )
+
+            st.write(
+                st.session_state.competitor_report
+            )
+
+
+    else:
+
+        with st.container(
+            border=True
+        ):
+
+            st.caption(
+                "No competitor check has been run yet."
             )
 
 
