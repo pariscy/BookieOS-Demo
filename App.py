@@ -239,6 +239,7 @@ SCOUT REPORT:
 """
 
                         research_report = run_bet_researcher(
+                            client,
                             researcher_task
                         )
 
