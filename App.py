@@ -1,7 +1,10 @@
+import asyncio
 import streamlit as st
 from openai import OpenAI
+
 from weekly_match_scout import run_weekly_match_scout
 from bet_researcher import run_bet_researcher
+from bookieco_live_feed import BookieCoLiveFeed
 
 
 st.set_page_config(
@@ -11,7 +14,7 @@ st.set_page_config(
 )
 
 
-# Connect BookieOS to OpenAI
+# ---------- OPENAI ----------
 client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
 
 
@@ -26,7 +29,12 @@ st.divider()
 main, agents = st.columns([2.3, 1])
 
 
+# =========================================================
+# MAIN BOOKIEOS AREA
+# =========================================================
+
 with main:
+
     st.subheader("🤖 BookieOS")
 
     st.info(
@@ -36,22 +44,28 @@ with main:
 
 
     # ---------- CHAT MEMORY ----------
+
     if "messages" not in st.session_state:
         st.session_state.messages = []
 
 
     for message in st.session_state.messages:
+
         with st.chat_message(message["role"]):
             st.write(message["content"])
 
 
     # ---------- VOICE INPUT ----------
+
     audio = st.audio_input("🎤 Talk to BookieOS")
 
     voice_prompt = None
 
+
     if audio:
+
         try:
+
             with st.spinner("🎤 Listening..."):
 
                 transcription = client.audio.transcriptions.create(
@@ -63,17 +77,26 @@ with main:
                 voice_prompt = transcription.text
 
         except Exception as e:
-            st.error("Voice transcription error: " + str(e))
+
+            st.error(
+                "Voice transcription error: "
+                + str(e)
+            )
 
 
     # ---------- TEXT INPUT ----------
-    prompt = st.chat_input("Ask BookieOS anything...")
+
+    prompt = st.chat_input(
+        "Ask BookieOS anything..."
+    )
+
 
     if voice_prompt:
         prompt = voice_prompt
 
 
     # ---------- PROCESS REQUEST ----------
+
     if prompt:
 
         st.session_state.messages.append({
@@ -81,8 +104,10 @@ with main:
             "content": prompt
         })
 
+
         with st.chat_message("user"):
             st.write(prompt)
+
 
         try:
 
@@ -90,7 +115,9 @@ with main:
 
 
             # ---------- MATCH SCOUT ROUTING ----------
+
             scout_words = [
+
                 "weekly match scout",
                 "match scout",
                 "find matches",
@@ -99,13 +126,16 @@ with main:
                 "matches next week",
                 "fixtures next week",
                 "football next week",
+
                 "formula 1",
                 "f1",
+
                 "champions league",
                 "europa league",
                 "conference league",
 
                 # Greek
+
                 "βρες αγώνες",
                 "βρες μου αγώνες",
                 "καλύτερους αγώνες",
@@ -122,10 +152,19 @@ with main:
             )
 
 
-            # ---------- WEEKLY MATCH SCOUT + AUTOMATIC BET RESEARCHER ----------
+            # =====================================================
+            # WEEKLY MATCH SCOUT
+            # THEN AUTOMATIC BET RESEARCHER
+            # =====================================================
+
             if use_scout:
 
-                with st.spinner("⚽ Weekly Match Scout is researching..."):
+
+                # ---------- AGENT 1 ----------
+
+                with st.spinner(
+                    "⚽ Weekly Match Scout is researching..."
+                ):
 
                     scout_result = run_weekly_match_scout(
                         client,
@@ -133,38 +172,67 @@ with main:
                     )
 
 
-                with st.spinner("🔎 Bet Researcher is automatically analysing the Scout report..."):
+                # ---------- AGENT 2 ----------
+
+                with st.spinner(
+                    "🔎 Bet Researcher is automatically analysing the recommendations..."
+                ):
 
                     researcher_task = f"""
-The Weekly Match Scout produced the following report:
+The Weekly Match Scout produced this report:
 
---- SCOUT REPORT START ---
+--------------------
+SCOUT REPORT
+--------------------
 
 {scout_result}
 
---- SCOUT REPORT END ---
+--------------------
+END SCOUT REPORT
+--------------------
 
-Automatically analyse EVERY proposed football betting market in this report.
+Analyse EVERY proposed football betting market in the report.
 
-For each proposed football bet:
+For every proposed bet:
 
 1. Identify the match.
 2. Identify the proposed betting market.
-3. Research whether the betting idea makes sense.
-4. Check current team/player/statistical information when relevant.
-5. Rate the proposed bet:
-   - STRONG
-   - REASONABLE
-   - WEAK
-6. Explain the reasoning briefly.
-7. Clearly state that BookieCo market availability is NOT YET VERIFIED.
+3. Research whether the betting idea makes statistical sense.
+4. Check relevant current team or player information.
+5. Rate the bet:
 
-Do not skip proposed football bets.
+STRONG
+REASONABLE
+WEAK
 
-Do not analyse Formula 1 or other non-football events as football betting markets.
+6. Estimate the likely price profile:
 
-Return the analysis in the same day-by-day order as the Scout report.
+TOO LOW
+GOOD MARKETING RANGE
+HIGH RISK - HIGH PRICE
+UNKNOWN
+
+7. BookieCo prefers interesting marketing bets.
+
+As a general target, prefer bets that would likely have decimal odds
+around 2.00 to 6.00.
+
+Avoid bets that would probably be below approximately 1.80 unless there
+is an exceptional reason.
+
+8. If the proposed bet is too low or weak, suggest a better,
+more interesting alternative.
+
+9. Do NOT invent BookieCo odds.
+
+10. BookieCo's actual market availability has not yet been verified
+by this research step.
+
+Analyse all football recommendations automatically.
+
+Do not require the user to ask you about each match individually.
 """
+
 
                     researcher_result = run_bet_researcher(
                         client,
@@ -172,38 +240,59 @@ Return the analysis in the same day-by-day order as the Scout report.
                     )
 
 
+                # ---------- COMBINED RESULT ----------
+
                 answer = (
                     "⚽ **Weekly Match Scout report**\n\n"
                     + scout_result
-                    + "\n\n---\n\n"
+                    + "\n\n"
+                    + "---"
+                    + "\n\n"
                     + "🔎 **Automatic Bet Researcher analysis**\n\n"
                     + researcher_result
                 )
 
 
-            # ---------- BOOKIEOS ----------
+            # =====================================================
+            # NORMAL BOOKIEOS
+            # =====================================================
+
             else:
 
                 response = client.responses.create(
+
                     model="gpt-5.6-luna",
+
                     instructions="""
 You are BookieOS, the internal AI operating system for BookieCo.
 
 Your job is to coordinate specialist AI agents and communicate with the user.
 
+
 CONNECTED AGENTS:
 
-1. Weekly Match Scout
-- Finds upcoming sporting events.
-- Produces weekly marketing recommendations.
+1. WEEKLY MATCH SCOUT
+
+The Weekly Match Scout:
+- Researches upcoming sporting events.
+- Creates weekly marketing recommendations.
+- Prioritises the Cyprus audience.
+- Gives additional priority to Cyprus and Greek teams.
+- Checks Formula 1.
 - Proposes interesting football betting markets.
 
-2. Bet Researcher
-- Automatically analyses every football betting market proposed by the Weekly Match Scout.
-- Researches whether the betting idea makes sense.
-- Will later verify BookieCo's actual market availability and odds.
 
-CURRENT AUTOMATIC WORKFLOW:
+2. BET RESEARCHER
+
+The Bet Researcher:
+- Automatically receives the Weekly Match Scout report.
+- Analyses every proposed football betting market.
+- Researches whether the betting angle makes sense.
+- Looks for more interesting alternatives when a proposed bet is too low.
+- Will eventually verify BookieCo's real markets and odds.
+
+
+AUTOMATIC WORKFLOW:
 
 User
 → BookieOS
@@ -212,19 +301,29 @@ User
 → BookieOS
 → User
 
-The user does NOT need to manually ask the Bet Researcher to analyse every match.
+
+The user does NOT need to manually ask the Bet Researcher
+to analyse every match.
+
+
+BOOKIECO DATA:
+
+We are currently building the connection to BookieCo's real betting data.
+
+Until that connection has been successfully verified:
+
+- Never invent BookieCo odds.
+- Never claim that a market definitely exists at BookieCo.
+- Never invent market availability.
+
 
 NOT YET CONNECTED:
+
 - Marketing Manager
 - Promotion Selector
 
-IMPORTANT:
-BookieCo's actual market catalogue and odds are NOT connected yet.
 
-Therefore:
-- Never claim a proposed betting market definitely exists at BookieCo.
-- Never invent BookieCo odds.
-- Bet Researcher analysis is research only until the BookieCo data connection is built.
+LANGUAGE:
 
 The user may communicate in English or Greek.
 
@@ -232,8 +331,10 @@ If the user speaks Greek, respond in Greek.
 
 If the user speaks English, respond in English.
 
+
 Be concise, professional and helpful.
 """,
+
                     input=[
                         {
                             "role": message["role"],
@@ -242,6 +343,7 @@ Be concise, professional and helpful.
                         for message in st.session_state.messages
                     ]
                 )
+
 
                 answer = response.output_text
 
@@ -259,33 +361,154 @@ Be concise, professional and helpful.
             "content": answer
         })
 
+
         with st.chat_message("assistant"):
             st.write(answer)
 
 
-# ---------- AGENTS PANEL ----------
+# =========================================================
+# AGENTS PANEL
+# =========================================================
+
 with agents:
 
     st.subheader("⚡ LIVE AGENTS")
 
 
-    st.markdown("**🤖 Marketing Manager**")
-    st.warning("● NOT CONNECTED")
+    # ---------- MARKETING MANAGER ----------
+
+    st.markdown(
+        "**🤖 Marketing Manager**"
+    )
+
+    st.warning(
+        "● NOT CONNECTED"
+    )
 
 
-    st.markdown("**⚽ Weekly Match Scout**")
-    st.success("● CONNECTED")
+    # ---------- WEEKLY MATCH SCOUT ----------
+
+    st.markdown(
+        "**⚽ Weekly Match Scout**"
+    )
+
+    st.success(
+        "● CONNECTED"
+    )
 
 
-    st.markdown("**🔎 Bet Researcher**")
-    st.success("● CONNECTED - AUTO")
+    # ---------- BET RESEARCHER ----------
+
+    st.markdown(
+        "**🔎 Bet Researcher**"
+    )
+
+    st.success(
+        "● CONNECTED - AUTO"
+    )
 
 
-    st.markdown("**📢 Promotion Selector**")
-    st.warning("● NOT CONNECTED")
+    # ---------- PROMOTION SELECTOR ----------
 
+    st.markdown(
+        "**📢 Promotion Selector**"
+    )
+
+    st.warning(
+        "● NOT CONNECTED"
+    )
+
+
+    # =====================================================
+    # BOOKIECO LIVE DATA TEST
+    # =====================================================
 
     st.divider()
 
-    st.caption("SYSTEM STATUS")
-    st.success("BOOKIEOS ONLINE")
+    st.markdown(
+        "**📡 BookieCo Market Feed**"
+    )
+
+
+    if st.button(
+        "🧪 Test BookieCo Live Feed"
+    ):
+
+        with st.spinner(
+            "Connecting to BookieCo..."
+        ):
+
+            feed = BookieCoLiveFeed()
+
+            try:
+
+                result = asyncio.run(
+                    feed.connect(
+                        listen_seconds=8
+                    )
+                )
+
+            except Exception as e:
+
+                result = {
+                    "success": False,
+                    "error": str(e)
+                }
+
+
+        if result.get("success"):
+
+            st.success(
+                "✅ BookieCo feed connected"
+            )
+
+
+            summary = result.get(
+                "summary",
+                {}
+            )
+
+
+            st.write(
+                "Matches received:",
+                summary.get(
+                    "matches_loaded",
+                    0
+                )
+            )
+
+
+            st.write(
+                "Markets received:",
+                summary.get(
+                    "markets_loaded",
+                    0
+                )
+            )
+
+
+        else:
+
+            st.error(
+                "❌ BookieCo feed connection failed"
+            )
+
+            st.write(
+                result.get(
+                    "error",
+                    "Unknown error"
+                )
+            )
+
+
+    # ---------- SYSTEM STATUS ----------
+
+    st.divider()
+
+    st.caption(
+        "SYSTEM STATUS"
+    )
+
+    st.success(
+        "BOOKIEOS ONLINE"
+    )
