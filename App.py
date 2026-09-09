@@ -5,6 +5,7 @@ from openai import OpenAI
 from weekly_match_scout import run_weekly_match_scout
 from bet_researcher import run_bet_researcher
 from bookieco_live_feed import BookieCoLiveFeed
+from bookieco_browser import search_bookieco
 
 
 # =========================================================
@@ -13,10 +14,14 @@ from bookieco_live_feed import BookieCoLiveFeed
 
 st.set_page_config(
     page_title="BookieOS",
-    page_icon="🤖",
+    page_icon="◉",
     layout="wide"
 )
 
+
+# =========================================================
+# OPENAI
+# =========================================================
 
 client = OpenAI(
     api_key=st.secrets["OPENAI_API_KEY"]
@@ -28,6 +33,7 @@ client = OpenAI(
 # =========================================================
 
 st.title("◉ BOOKIEOS")
+
 st.caption(
     "BookieCo Artificial Intelligence Operating System"
 )
@@ -35,8 +41,12 @@ st.caption(
 st.divider()
 
 
-main, agents = st.columns(
-    [2.3, 1]
+# =========================================================
+# LAYOUT
+# =========================================================
+
+main_column, agent_column = st.columns(
+    [3, 1]
 )
 
 
@@ -44,222 +54,216 @@ main, agents = st.columns(
 # MAIN BOOKIEOS
 # =========================================================
 
-with main:
+with main_column:
 
-    st.subheader("🤖 BookieOS")
+    st.subheader("BookieOS")
 
-    st.info(
-        "Good afternoon, Paris.\n\n"
-        "BookieOS is online. What would you like me to do?"
+    st.caption(
+        "Talk to BookieOS in English or Greek."
     )
 
 
-    # =====================================================
-    # CHAT MEMORY
-    # =====================================================
-
-    if "messages" not in st.session_state:
-
-        st.session_state.messages = []
-
-
-    for message in st.session_state.messages:
-
-        with st.chat_message(
-            message["role"]
-        ):
-
-            st.write(
-                message["content"]
-            )
-
-
-    # =====================================================
+    # -----------------------------------------------------
     # VOICE
-    # =====================================================
+    # -----------------------------------------------------
+
+    voice_prompt = None
 
     audio = st.audio_input(
         "🎤 Talk to BookieOS"
     )
 
-
-    voice_prompt = None
-
-
-    if audio:
+    if audio is not None:
 
         try:
 
-            with st.spinner(
-                "🎤 Listening..."
-            ):
-
-                transcription = (
-                    client.audio.transcriptions.create(
-                        model="gpt-4o-mini-transcribe",
-                        file=audio,
-                        language="el"
-                    )
+            transcription = (
+                client.audio.transcriptions.create(
+                    model="gpt-4o-mini-transcribe",
+                    file=audio,
+                    language="el"
                 )
+            )
 
+            voice_prompt = (
+                transcription.text
+            )
 
-                voice_prompt = (
-                    transcription.text
-                )
-
+            st.write(
+                "🎙️",
+                voice_prompt
+            )
 
         except Exception as e:
 
             st.error(
-                "Voice transcription error: "
-                + str(e)
+                f"Voice error: {e}"
             )
 
 
-    # =====================================================
+    # -----------------------------------------------------
     # TEXT INPUT
-    # =====================================================
+    # -----------------------------------------------------
 
-    prompt = st.chat_input(
-        "Ask BookieOS anything..."
+    text_prompt = st.chat_input(
+        "Ask BookieOS..."
     )
 
 
-    if voice_prompt:
+    user_prompt = (
+        text_prompt
+        or voice_prompt
+    )
 
-        prompt = voice_prompt
 
+    # -----------------------------------------------------
+    # HANDLE REQUEST
+    # -----------------------------------------------------
 
-    # =====================================================
-    # PROCESS
-    # =====================================================
-
-    if prompt:
-
-        st.session_state.messages.append({
-            "role": "user",
-            "content": prompt
-        })
-
+    if user_prompt:
 
         with st.chat_message("user"):
 
-            st.write(prompt)
+            st.write(
+                user_prompt
+            )
 
 
-        try:
+        with st.chat_message("assistant"):
 
-            prompt_lower = (
-                prompt.lower()
+            lower_prompt = (
+                user_prompt.lower()
             )
 
 
             scout_words = [
 
-                "weekly match scout",
+                "weekly match",
                 "match scout",
-                "find matches",
-                "find fixtures",
-                "best matches",
+                "matches this week",
                 "matches next week",
-                "fixtures next week",
+                "football this week",
                 "football next week",
+                "weekly football",
+                "find matches",
+                "marketing matches",
 
-                "formula 1",
-                "f1",
-
-                "champions league",
-                "europa league",
-                "conference league",
-
-                "βρες αγώνες",
-                "βρες μου αγώνες",
-                "καλύτερους αγώνες",
+                "αγώνες εβδομάδας",
+                "αγωνες εβδομαδας",
+                "αγώνες αυτής της εβδομάδας",
+                "αγωνες αυτης της εβδομαδας",
                 "αγώνες επόμενης εβδομάδας",
-                "επόμενη εβδομάδα",
-                "ποδόσφαιρο",
-                "φόρμουλα 1"
+                "αγωνες επομενης εβδομαδας"
             ]
 
 
             use_scout = any(
-                word in prompt_lower
+                word in lower_prompt
                 for word in scout_words
             )
 
 
             # =================================================
-            # AGENT 1 + AGENT 2
+            # WEEKLY MATCH SCOUT
             # =================================================
 
             if use_scout:
 
                 with st.spinner(
-                    "⚽ Weekly Match Scout is researching..."
+                    "Weekly Match Scout is researching..."
                 ):
 
-                    scout_result = (
-                        run_weekly_match_scout(
-                            client,
-                            prompt
+                    try:
+
+                        scout_report = (
+                            run_weekly_match_scout(
+                                user_prompt
+                            )
                         )
-                    )
 
 
-                with st.spinner(
-                    "🔎 Bet Researcher is analysing..."
-                ):
+                        st.markdown(
+                            "### 🔎 Weekly Match Scout"
+                        )
 
-                    researcher_task = f"""
-The Weekly Match Scout produced this report:
+                        st.write(
+                            scout_report
+                        )
 
-========================
-SCOUT REPORT
-========================
 
-{scout_result}
+                        st.divider()
 
-========================
-END SCOUT REPORT
-========================
 
-Analyse EVERY proposed football betting market.
+                        # =====================================
+                        # AUTOMATIC BET RESEARCHER
+                        # =====================================
 
-For every bet:
+                        with st.spinner(
+                            "Bet Researcher is analysing the bets..."
+                        ):
 
-- Research whether the idea makes sense.
-- Rate it STRONG, REASONABLE or WEAK.
-- Prefer interesting marketing bets.
-- Prefer estimated decimal odds around 2.00 to 6.00.
-- Avoid boring low-odds selections when possible.
-- Suggest a better alternative when appropriate.
+                            researcher_task = f"""
+The Weekly Match Scout produced the report below.
 
-Never invent BookieCo odds.
+Analyse EVERY proposed FOOTBALL betting market in the report.
 
-Never claim that a market is available at BookieCo unless
-actual BookieCo data verifies it.
+For each proposed football bet:
 
-BookieCo integration is currently being connected automatically.
+1. Identify the match.
+2. Identify the proposed betting market.
+3. Research current information about the teams and players.
+4. Decide whether the proposed bet makes sense.
+5. Rate it:
+   STRONG
+   REASONABLE
+   WEAK
+
+6. Estimate the likely price profile:
+   TOO LOW
+   GOOD MARKETING RANGE
+   HIGH RISK - HIGH PRICE
+   UNKNOWN
+
+Prefer interesting marketing bets that would likely be around
+decimal odds 2.00 to 6.00.
+
+Avoid boring bets that are likely below approximately 1.80
+unless there is an exceptional reason.
+
+If the proposed bet is too low or weak, suggest a more
+interesting alternative.
+
+Do NOT invent BookieCo odds.
+
+BookieCo market availability is not yet verified.
+
+SCOUT REPORT:
+
+{scout_report}
 """
 
 
-                    researcher_result = (
-                        run_bet_researcher(
-                            client,
-                            researcher_task
+                            research_report = (
+                                run_bet_researcher(
+                                    researcher_task
+                                )
+                            )
+
+
+                        st.markdown(
+                            "### 🧠 Bet Researcher"
                         )
-                    )
+
+                        st.write(
+                            research_report
+                        )
 
 
-                answer = (
-                    "⚽ **Weekly Match Scout report**"
-                    "\n\n"
-                    + scout_result
-                    + "\n\n---\n\n"
-                    + "🔎 **Automatic Bet Researcher analysis**"
-                    "\n\n"
-                    + researcher_result
-                )
+                    except Exception as e:
+
+                        st.error(
+                            f"Agent error: {e}"
+                        )
 
 
             # =================================================
@@ -268,126 +272,114 @@ BookieCo integration is currently being connected automatically.
 
             else:
 
-                response = (
-                    client.responses.create(
+                try:
 
-                        model="gpt-5.6-luna",
+                    response = (
+                        client.responses.create(
 
-                        instructions="""
-You are BookieOS, the internal AI operating system for BookieCo.
+                            model="gpt-5.6-luna",
 
-CONNECTED:
+                            instructions="""
+You are BookieOS.
 
-- Weekly Match Scout
-- Bet Researcher
-- BookieCo data connector
+You are the central AI assistant for BookieCo,
+a retail betting company in Cyprus.
 
-The BookieCo connector can now search the company's
-sports database for matches and retrieve BookieCo match IDs.
+Connected agents:
 
-Full automatic market and odds verification is still being completed.
+Weekly Match Scout
+Bet Researcher
 
-Never invent BookieCo odds or market availability.
+Not connected yet:
 
-NOT YET CONNECTED:
+Marketing Manager
+Promotion Selector
 
-- Marketing Manager
-- Promotion Selector
+Workflow:
 
-If the user speaks Greek, respond in Greek.
-If the user speaks English, respond in English.
+User
+→ BookieOS
+→ specialist agent
+→ BookieOS
+→ User
 
-Be concise and professional.
+The BookieCo live betting market connection
+is currently being developed.
+
+Never invent BookieCo odds.
+
+Never claim that a betting market exists at
+BookieCo unless it has been verified using
+BookieCo data.
+
+If the user speaks Greek, answer in Greek.
+
+If the user speaks English, answer in English.
+
+Keep answers clear and practical.
 """,
 
-                        input=[
-                            {
-                                "role":
-                                    message["role"],
-
-                                "content":
-                                    message["content"]
-                            }
-
-                            for message
-                            in st.session_state.messages
-                        ]
+                            input=user_prompt
+                        )
                     )
-                )
 
 
-                answer = (
-                    response.output_text
-                )
+                    st.write(
+                        response.output_text
+                    )
 
 
-        except Exception as e:
+                except Exception as e:
 
-            answer = (
-                "BookieOS encountered an error: "
-                + str(e)
-            )
-
-
-        st.session_state.messages.append({
-            "role": "assistant",
-            "content": answer
-        })
-
-
-        with st.chat_message(
-            "assistant"
-        ):
-
-            st.write(
-                answer
-            )
+                    st.error(
+                        f"BookieOS error: {e}"
+                    )
 
 
 # =========================================================
-# AGENTS PANEL
+# AGENT PANEL
 # =========================================================
 
-with agents:
+with agent_column:
 
     st.subheader(
-        "⚡ LIVE AGENTS"
+        "Live Agents"
     )
 
 
-    st.markdown(
-        "**🤖 Marketing Manager**"
+    st.write(
+        "🔴 Marketing Manager"
     )
 
-    st.warning(
-        "● NOT CONNECTED"
-    )
-
-
-    st.markdown(
-        "**⚽ Weekly Match Scout**"
-    )
-
-    st.success(
-        "● CONNECTED"
+    st.caption(
+        "NOT CONNECTED"
     )
 
 
-    st.markdown(
-        "**🔎 Bet Researcher**"
+    st.write(
+        "🟢 Weekly Match Scout"
     )
 
-    st.success(
-        "● CONNECTED - AUTO"
+    st.caption(
+        "CONNECTED"
     )
 
 
-    st.markdown(
-        "**📢 Promotion Selector**"
+    st.write(
+        "🟢 Bet Researcher"
     )
 
-    st.warning(
-        "● NOT CONNECTED"
+    st.caption(
+        "CONNECTED - AUTO"
+    )
+
+
+    st.write(
+        "🔴 Promotion Selector"
+    )
+
+    st.caption(
+        "NOT CONNECTED"
     )
 
 
@@ -395,288 +387,288 @@ with agents:
 
 
     # =====================================================
-    # BOOKIECO SEARCH
+    # WEBSITE READER TEST
     # =====================================================
 
-    st.markdown(
-        "**🔎 BookieCo Match Search**"
+    st.subheader(
+        "🌐 BookieCo Website Reader"
+    )
+
+    st.caption(
+        "Testing BookieOS reading the public website."
     )
 
 
     if st.button(
-        "🔎 Search Olympiacos"
+        "🌐 Test Website Reader",
+        use_container_width=True
+    ):
+
+        with st.spinner(
+            "Opening BookieCo website..."
+        ):
+
+            try:
+
+                website_text = (
+                    search_bookieco(
+                        "Olympiacos"
+                    )
+                )
+
+
+                st.success(
+                    "BookieCo website opened!"
+                )
+
+
+                st.text_area(
+                    "What BookieOS can see:",
+                    website_text,
+                    height=400
+                )
+
+
+            except Exception as e:
+
+                st.error(
+                    f"Website reader error: {e}"
+                )
+
+
+    st.divider()
+
+
+    # =====================================================
+    # OLD API SEARCH TEST
+    # =====================================================
+
+    st.subheader(
+        "🔎 BookieCo Match Search"
+    )
+
+
+    if st.button(
+        "🔎 Search Olympiacos",
+        use_container_width=True
     ):
 
         with st.spinner(
             "Searching BookieCo..."
         ):
 
-            feed = (
-                BookieCoLiveFeed()
-            )
-
-
-            result = (
-                feed.search_football_match(
-                    "Olympia"
-                )
-            )
-
-
-        if result.get(
-            "success"
-        ):
-
-            st.success(
-                "✅ BookieCo search connected"
-            )
-
-
-            st.write(
-                "Football matches found:",
-                result.get(
-                    "matches_found",
-                    0
-                )
-            )
-
-
-            matches = (
-                result.get(
-                    "results",
-                    []
-                )
-            )
-
-
-            if matches:
-
-                for match in matches:
-
-                    st.markdown("---")
-
-
-                    st.markdown(
-                        "### ⚽ "
-                        + str(
-                            match.get(
-                                "name",
-                                "Unknown match"
-                            )
-                        )
-                    )
-
-
-                    st.write(
-                        "**BookieCo Match ID:**",
-                        match.get(
-                            "match_id"
-                        )
-                    )
-
-
-                    st.write(
-                        "**Competition:**",
-                        match.get(
-                            "league_name"
-                        )
-                    )
-
-
-                    st.write(
-                        "**Country/Category:**",
-                        match.get(
-                            "category_name"
-                        )
-                    )
-
-
-                    st.write(
-                        "**Status:**",
-                        match.get(
-                            "status"
-                        )
-                    )
-
-
-            else:
-
-                st.warning(
-                    "BookieCo responded successfully, "
-                    "but no football matches were returned."
-                )
-
-
-        else:
-
-            st.error(
-                "❌ BookieCo search failed"
-            )
-
-
-            st.write(
-                result.get(
-                    "error",
-                    "Unknown error"
-                )
-            )
-
-
-    st.divider()
-
-
-    # =====================================================
-    # LIVE FEED
-    # =====================================================
-
-    st.markdown(
-        "**📡 BookieCo Live Feed**"
-    )
-
-
-    if st.button(
-        "🧪 Test Live Feed"
-    ):
-
-        with st.spinner(
-            "Connecting to BookieCo..."
-        ):
-
-            feed = (
-                BookieCoLiveFeed()
-            )
-
-
             try:
 
+                feed = (
+                    BookieCoLiveFeed()
+                )
+
+
                 result = (
-                    asyncio.run(
-                        feed.connect(
-                            listen_seconds=8
-                        )
+                    feed.search_football_match(
+                        "Olympia"
                     )
                 )
+
+
+                if result.get(
+                    "success"
+                ):
+
+                    st.success(
+                        "BookieCo search connected"
+                    )
+
+
+                    st.write(
+                        "Matches found:",
+                        result.get(
+                            "matches_found",
+                            0
+                        )
+                    )
+
+
+                    for match in result.get(
+                        "results",
+                        []
+                    ):
+
+                        st.markdown(
+                            f"**{match.get('name')}**"
+                        )
+
+                        st.write(
+                            "BookieCo Match ID:",
+                            match.get(
+                                "match_id"
+                            )
+                        )
+
+                        st.write(
+                            "Competition:",
+                            match.get(
+                                "league_name"
+                            )
+                        )
+
+                        st.write(
+                            "Country/Category:",
+                            match.get(
+                                "category_name"
+                            )
+                        )
+
+                        st.write(
+                            "Status:",
+                            match.get(
+                                "status"
+                            )
+                        )
+
+                        st.divider()
+
+
+                else:
+
+                    st.error(
+                        "BookieCo search failed"
+                    )
+
+                    st.write(
+                        result
+                    )
 
 
             except Exception as e:
 
-                result = {
-                    "success": False,
-                    "error": str(e)
-                }
-
-
-        if result.get(
-            "success"
-        ):
-
-            summary = (
-                result.get(
-                    "summary",
-                    {}
+                st.error(
+                    f"Search error: {e}"
                 )
-            )
-
-
-            st.success(
-                "✅ BookieCo feed connected"
-            )
-
-
-            st.write(
-                "Matches received:",
-                summary.get(
-                    "matches_loaded",
-                    0
-                )
-            )
-
-
-            st.write(
-                "Markets received:",
-                summary.get(
-                    "markets_loaded",
-                    0
-                )
-            )
-
-
-            matches = (
-                result.get(
-                    "matches",
-                    []
-                )
-            )
-
-
-            for match in matches:
-
-                competitors = (
-                    match.get(
-                        "competitors",
-                        []
-                    )
-                )
-
-
-                if len(
-                    competitors
-                ) >= 2:
-
-                    name = (
-                        str(
-                            competitors[0]
-                        )
-                        + " vs "
-                        + str(
-                            competitors[1]
-                        )
-                    )
-
-                else:
-
-                    name = (
-                        str(
-                            competitors
-                        )
-                    )
-
-
-                st.write(
-                    "⚽ " + name
-                )
-
-
-                st.caption(
-                    "Match ID: "
-                    + str(
-                        match.get(
-                            "match_id"
-                        )
-                    )
-                )
-
-
-        else:
-
-            st.error(
-                "❌ BookieCo feed connection failed"
-            )
-
-
-            st.write(
-                result.get(
-                    "error",
-                    "Unknown error"
-                )
-            )
 
 
     st.divider()
 
-    st.caption(
-        "SYSTEM STATUS"
+
+    # =====================================================
+    # LIVE FEED TEST
+    # =====================================================
+
+    st.subheader(
+        "📡 BookieCo Live Feed"
     )
+
+
+    if st.button(
+        "🧪 Test Live Feed",
+        use_container_width=True
+    ):
+
+        with st.spinner(
+            "Listening to BookieCo..."
+        ):
+
+            try:
+
+                feed = (
+                    BookieCoLiveFeed()
+                )
+
+
+                result = asyncio.run(
+                    feed.connect(
+                        listen_seconds=8
+                    )
+                )
+
+
+                if result.get(
+                    "success"
+                ):
+
+                    summary = (
+                        result.get(
+                            "summary",
+                            {}
+                        )
+                    )
+
+
+                    st.success(
+                        "BookieCo feed connected"
+                    )
+
+
+                    st.write(
+                        "Matches received:",
+                        summary.get(
+                            "matches_loaded",
+                            0
+                        )
+                    )
+
+
+                    st.write(
+                        "Markets received:",
+                        summary.get(
+                            "markets_loaded",
+                            0
+                        )
+                    )
+
+
+                    for match in result.get(
+                        "matches",
+                        []
+                    ):
+
+                        competitors = (
+                            match.get(
+                                "competitors",
+                                []
+                            )
+                        )
+
+
+                        if competitors:
+
+                            st.write(
+                                "⚽ "
+                                + " vs ".join(
+                                    competitors
+                                )
+                            )
+
+
+                            st.caption(
+                                "ID: "
+                                + str(
+                                    match.get(
+                                        "match_id"
+                                    )
+                                )
+                            )
+
+
+                else:
+
+                    st.error(
+                        "BookieCo feed failed"
+                    )
+
+                    st.write(
+                        result
+                    )
+
+
+            except Exception as e:
+
+                st.error(
+                    f"Live feed error: {e}"
+                )
+
+
+    st.divider()
 
     st.success(
         "BOOKIEOS ONLINE"
