@@ -1,6 +1,7 @@
 import streamlit as st
 from openai import OpenAI
 from weekly_match_scout import run_weekly_match_scout
+from bet_researcher import run_bet_researcher
 
 
 st.set_page_config(
@@ -70,7 +71,6 @@ with main:
     prompt = st.chat_input("Ask BookieOS anything...")
 
 
-    # If voice was used, use the spoken text as the prompt
     if voice_prompt:
         prompt = voice_prompt
 
@@ -88,38 +88,72 @@ with main:
 
         try:
 
-            # Decide whether this request belongs to the Match Scout
             prompt_lower = prompt.lower()
+
+
+            # ---------- ROUTING WORDS ----------
 
             scout_words = [
                 "weekly match scout",
                 "match scout",
-                "matches",
-                "match",
-                "fixtures",
-                "football",
-                "next week",
-                "champions league",
-                "premier league",
-                "europa league",
-                "conference league",
-                "la liga",
-                "serie a",
-                "bundesliga",
+                "find matches",
+                "find fixtures",
+                "best matches",
+                "matches next week",
+                "fixtures next week",
+                "football next week",
                 "formula 1",
                 "f1",
+                "champions league",
+                "europa league",
+                "conference league",
 
-                # Greek routing words
-                "αγώνες",
-                "αγώνα",
-                "ποδόσφαιρο",
+                # Greek
+                "βρες αγώνες",
+                "βρες μου αγώνες",
+                "καλύτερους αγώνες",
+                "αγώνες επόμενης εβδομάδας",
                 "επόμενη εβδομάδα",
-                "ερχόμενη εβδομάδα",
-                "τσάμπιονς λιγκ",
-                "γιουρόπα λιγκ",
-                "κόνφερενς λιγκ",
+                "ποδόσφαιρο",
                 "φόρμουλα 1"
             ]
+
+
+            researcher_words = [
+                "bet researcher",
+                "research this bet",
+                "research the bet",
+                "check this bet",
+                "check this market",
+                "bet type",
+                "bet market",
+                "bet builder",
+                "player shots",
+                "player cards",
+                "corners",
+                "cards",
+                "does this bet make sense",
+                "analyse this bet",
+                "analyze this bet",
+
+                # Greek
+                "έλεγξε το στοίχημα",
+                "έλεγξε αυτό το στοίχημα",
+                "έλεγξε την αγορά",
+                "τύπος στοιχήματος",
+                "αγορά στοιχήματος",
+                "bet builder",
+                "κόρνερ",
+                "κάρτες",
+                "σουτ παίκτη",
+                "ανάλυσε το στοίχημα"
+            ]
+
+
+            use_researcher = any(
+                word in prompt_lower
+                for word in researcher_words
+            )
 
             use_scout = any(
                 word in prompt_lower
@@ -127,8 +161,24 @@ with main:
             )
 
 
+            # ---------- BET RESEARCHER ----------
+            if use_researcher:
+
+                with st.spinner("🔎 Bet Researcher is working..."):
+
+                    researcher_result = run_bet_researcher(
+                        client,
+                        prompt
+                    )
+
+                answer = (
+                    "🔎 **Bet Researcher report**\n\n"
+                    + researcher_result
+                )
+
+
             # ---------- WEEKLY MATCH SCOUT ----------
-            if use_scout:
+            elif use_scout:
 
                 with st.spinner("⚽ Weekly Match Scout is working..."):
 
@@ -153,18 +203,31 @@ You are BookieOS, the internal AI operating system for BookieCo.
 
 Your job is to coordinate specialist AI agents and communicate with the user.
 
-Current Marketing agents:
+CURRENT CONNECTED AGENTS:
+
+1. Weekly Match Scout
+Purpose:
+Research upcoming sporting events and recommend strong marketing opportunities.
+
+2. Bet Researcher
+Purpose:
+Research proposed betting ideas, analyse whether the betting angle makes sense,
+and eventually verify whether the market exists at BookieCo.
+
+NOT YET CONNECTED:
 
 - Marketing Manager
-- Weekly Match Scout
-- Bet Researcher
 - Promotion Selector
 
-The Weekly Match Scout is connected.
+IMPORTANT:
+BookieCo's actual market catalogue and odds are NOT connected yet.
 
-The other specialist agents are not connected yet.
+Therefore:
+- Never claim that a proposed betting market is definitely available at BookieCo.
+- Never invent BookieCo odds.
+- The Bet Researcher may research the idea, but BookieCo availability still requires a future data connection.
 
-The user may communicate with you in English or Greek.
+The user may communicate in English or Greek.
 
 If the user speaks Greek, respond in Greek.
 
@@ -218,7 +281,7 @@ with agents:
 
 
     st.markdown("**🔎 Bet Researcher**")
-    st.warning("● NOT CONNECTED")
+    st.success("● CONNECTED")
 
 
     st.markdown("**📢 Promotion Selector**")
