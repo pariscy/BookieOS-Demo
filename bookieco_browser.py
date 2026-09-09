@@ -17,7 +17,12 @@ def search_bookieco(match_text="Olympiacos"):
             ]
         )
 
-        page = browser.new_page()
+        page = browser.new_page(
+            viewport={
+                "width": 1440,
+                "height": 1200
+            }
+        )
 
         page.goto(
             BOOKIECO_URL,
@@ -25,10 +30,25 @@ def search_bookieco(match_text="Olympiacos"):
             timeout=60000
         )
 
-        page.wait_for_timeout(8000)
+        # Give the betting application time to load
+        page.wait_for_timeout(15000)
 
-        text = page.locator("body").inner_text()
+        # Get visible text
+        body_text = page.locator("body").inner_text()
 
-        browser.close()
+        # If normal text is empty, also inspect the HTML
+        if not body_text.strip():
 
-        return text
+            html = page.content()
+
+            return (
+                "PAGE TEXT WAS EMPTY\n\n"
+                "PAGE TITLE:\n"
+                + page.title()
+                + "\n\nURL:\n"
+                + page.url
+                + "\n\nHTML PREVIEW:\n"
+                + html[:10000]
+            )
+
+        return body_text
