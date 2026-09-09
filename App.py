@@ -40,7 +40,6 @@ with main:
         st.session_state.messages = []
 
 
-    # Show previous messages
     for message in st.session_state.messages:
         with st.chat_message(message["role"]):
             st.write(message["content"])
@@ -70,7 +69,6 @@ with main:
     # ---------- TEXT INPUT ----------
     prompt = st.chat_input("Ask BookieOS anything...")
 
-
     if voice_prompt:
         prompt = voice_prompt
 
@@ -91,8 +89,7 @@ with main:
             prompt_lower = prompt.lower()
 
 
-            # ---------- ROUTING WORDS ----------
-
+            # ---------- MATCH SCOUT ROUTING ----------
             scout_words = [
                 "weekly match scout",
                 "match scout",
@@ -119,77 +116,68 @@ with main:
             ]
 
 
-            researcher_words = [
-                "bet researcher",
-                "research this bet",
-                "research the bet",
-                "check this bet",
-                "check this market",
-                "bet type",
-                "bet market",
-                "bet builder",
-                "player shots",
-                "player cards",
-                "corners",
-                "cards",
-                "does this bet make sense",
-                "analyse this bet",
-                "analyze this bet",
-
-                # Greek
-                "έλεγξε το στοίχημα",
-                "έλεγξε αυτό το στοίχημα",
-                "έλεγξε την αγορά",
-                "τύπος στοιχήματος",
-                "αγορά στοιχήματος",
-                "bet builder",
-                "κόρνερ",
-                "κάρτες",
-                "σουτ παίκτη",
-                "ανάλυσε το στοίχημα"
-            ]
-
-
-            use_researcher = any(
-                word in prompt_lower
-                for word in researcher_words
-            )
-
             use_scout = any(
                 word in prompt_lower
                 for word in scout_words
             )
 
 
-            # ---------- BET RESEARCHER ----------
-            if use_researcher:
+            # ---------- WEEKLY MATCH SCOUT + AUTOMATIC BET RESEARCHER ----------
+            if use_scout:
 
-                with st.spinner("🔎 Bet Researcher is working..."):
-
-                    researcher_result = run_bet_researcher(
-                        client,
-                        prompt
-                    )
-
-                answer = (
-                    "🔎 **Bet Researcher report**\n\n"
-                    + researcher_result
-                )
-
-
-            # ---------- WEEKLY MATCH SCOUT ----------
-            elif use_scout:
-
-                with st.spinner("⚽ Weekly Match Scout is working..."):
+                with st.spinner("⚽ Weekly Match Scout is researching..."):
 
                     scout_result = run_weekly_match_scout(
                         client,
                         prompt
                     )
 
+
+                with st.spinner("🔎 Bet Researcher is automatically analysing the Scout report..."):
+
+                    researcher_task = f"""
+The Weekly Match Scout produced the following report:
+
+--- SCOUT REPORT START ---
+
+{scout_result}
+
+--- SCOUT REPORT END ---
+
+Automatically analyse EVERY proposed football betting market in this report.
+
+For each proposed football bet:
+
+1. Identify the match.
+2. Identify the proposed betting market.
+3. Research whether the betting idea makes sense.
+4. Check current team/player/statistical information when relevant.
+5. Rate the proposed bet:
+   - STRONG
+   - REASONABLE
+   - WEAK
+6. Explain the reasoning briefly.
+7. Clearly state that BookieCo market availability is NOT YET VERIFIED.
+
+Do not skip proposed football bets.
+
+Do not analyse Formula 1 or other non-football events as football betting markets.
+
+Return the analysis in the same day-by-day order as the Scout report.
+"""
+
+                    researcher_result = run_bet_researcher(
+                        client,
+                        researcher_task
+                    )
+
+
                 answer = (
                     "⚽ **Weekly Match Scout report**\n\n"
                     + scout_result
+                    + "\n\n---\n\n"
+                    + "🔎 **Automatic Bet Researcher analysis**\n\n"
+                    + researcher_result
                 )
 
 
@@ -203,19 +191,30 @@ You are BookieOS, the internal AI operating system for BookieCo.
 
 Your job is to coordinate specialist AI agents and communicate with the user.
 
-CURRENT CONNECTED AGENTS:
+CONNECTED AGENTS:
 
 1. Weekly Match Scout
-Purpose:
-Research upcoming sporting events and recommend strong marketing opportunities.
+- Finds upcoming sporting events.
+- Produces weekly marketing recommendations.
+- Proposes interesting football betting markets.
 
 2. Bet Researcher
-Purpose:
-Research proposed betting ideas, analyse whether the betting angle makes sense,
-and eventually verify whether the market exists at BookieCo.
+- Automatically analyses every football betting market proposed by the Weekly Match Scout.
+- Researches whether the betting idea makes sense.
+- Will later verify BookieCo's actual market availability and odds.
+
+CURRENT AUTOMATIC WORKFLOW:
+
+User
+→ BookieOS
+→ Weekly Match Scout
+→ Bet Researcher
+→ BookieOS
+→ User
+
+The user does NOT need to manually ask the Bet Researcher to analyse every match.
 
 NOT YET CONNECTED:
-
 - Marketing Manager
 - Promotion Selector
 
@@ -223,9 +222,9 @@ IMPORTANT:
 BookieCo's actual market catalogue and odds are NOT connected yet.
 
 Therefore:
-- Never claim that a proposed betting market is definitely available at BookieCo.
+- Never claim a proposed betting market definitely exists at BookieCo.
 - Never invent BookieCo odds.
-- The Bet Researcher may research the idea, but BookieCo availability still requires a future data connection.
+- Bet Researcher analysis is research only until the BookieCo data connection is built.
 
 The user may communicate in English or Greek.
 
@@ -234,8 +233,6 @@ If the user speaks Greek, respond in Greek.
 If the user speaks English, respond in English.
 
 Be concise, professional and helpful.
-
-Never pretend that an unconnected agent has completed work.
 """,
                     input=[
                         {
@@ -281,7 +278,7 @@ with agents:
 
 
     st.markdown("**🔎 Bet Researcher**")
-    st.success("● CONNECTED")
+    st.success("● CONNECTED - AUTO")
 
 
     st.markdown("**📢 Promotion Selector**")
