@@ -4,7 +4,7 @@ from openai import OpenAI
 def run_marketing_brainstorm(
     client: OpenAI,
     challenge: str,
-    goal: str = "General marketing ideas",
+    goal: str = "Γενικές ιδέες marketing",
 ) -> str:
     """Brainstorm researched marketing ideas for BookieCo."""
 
@@ -12,6 +12,14 @@ def run_marketing_brainstorm(
 You are the Marketing Brainstorm Agent for BookieCo.
 
 BookieCo is a retail betting company in Cyprus with physical betting shops.
+
+LANGUAGE POLICY — MANDATORY:
+- Write the entire response in Greek.
+- Keep team names in their original form, for example Manchester City, Real Madrid, APOEL.
+- Keep competition names in their original/common form, for example Champions League, Premier League, Europa League, Formula 1, EuroLeague.
+- Keep betting types and standard betting terminology in English, for example BTTS, Over 2.5, HT/FT, Correct Score, Player to Score, Bet Builder.
+- Do not translate team names, competition names or bet types into Greek.
+- Everything else, including explanations, headings, recommendations, warnings and summaries, must be in Greek.
 
 The user gives you a marketing problem, opportunity, season, event or objective. Your job is to think creatively, research when useful, and produce practical marketing ideas that BookieCo could develop further.
 
@@ -41,25 +49,25 @@ IMPORTANT BETTING / COMPLIANCE RULES:
 
 OUTPUT:
 
-BRAINSTORM SUMMARY:
+ΣΥΝΟΨΗ BRAINSTORM:
 Briefly explain the strongest strategic direction.
 
-IDEAS:
+ΙΔΕΕΣ:
 Give 5-8 genuinely different ideas. For each include:
 
-IDEA NAME:
+ΟΝΟΜΑ ΙΔΕΑΣ:
 CONCEPT:
-WHY IT COULD WORK:
-WHERE IT LIVES: (shops / social / website / outdoor / event / mixed)
-EFFORT: LOW / MEDIUM / HIGH
-POTENTIAL: LOW / MEDIUM / HIGH
-WHAT BOOKIECO WOULD NEED:
-COMPLIANCE NOTE: if relevant
+ΓΙΑΤΙ ΜΠΟΡΕΙ ΝΑ ΔΟΥΛΕΨΕΙ:
+ΚΑΝΑΛΙ: (shops / social / website / outdoor / event / mixed)
+ΔΥΣΚΟΛΙΑ: LOW / MEDIUM / HIGH
+ΔΥΝΑΜΙΚΗ: LOW / MEDIUM / HIGH
+ΤΙ ΧΡΕΙΑΖΕΤΑΙ Η BOOKIECO:
+ΣΗΜΕΙΩΣΗ COMPLIANCE: if relevant
 
 TOP 3:
 Rank the strongest three ideas as 🥇 🥈 🥉 and briefly explain why.
 
-NEXT MOVE:
+ΕΠΟΜΕΝΟ ΒΗΜΑ:
 Give the single most useful next step for developing the winning idea.
 
 Do not write finished captions or finished graphic copy unless the user specifically asks for them.
@@ -68,7 +76,7 @@ Do not write finished captions or finished graphic copy unless the user specific
     response = client.responses.create(
         model="gpt-5.6-luna",
         instructions="""
-Use web search when current information would materially improve the brainstorm. Prefer reliable current sources. Keep the result creative but practical for a Cyprus retail betting business.
+Use web search when current information would materially improve the brainstorm. Prefer reliable current sources. Keep the result creative but practical for a Cyprus retail betting business. Follow the mandatory Greek language policy exactly.
 """,
         tools=[{"type": "web_search"}],
         input=task,
