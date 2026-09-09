@@ -2,12 +2,14 @@ import asyncio
 import json
 import random
 import time
+import urllib.request
 import websockets
 
 from bookieco_market_reader import BookieCoMarketReader
 
 
 BOOKIECO_WS_URL = "wss://agents.bookieco.com.cy/ws/"
+BOOKIECO_SEARCH_URL = "https://agents.bookieco.com.cy/api/sports/search"
 
 
 class BookieCoLiveFeed:
@@ -19,9 +21,7 @@ class BookieCoLiveFeed:
 
 
     # =====================================================
-    # CREATE BOOKIECO-STYLE INTERNAL ID
-    # Example:
-    # 1788957133291-756
+    # BOOKIECO INTERNAL ID
     # =====================================================
 
     def _create_internal_id(self):
@@ -40,6 +40,174 @@ class BookieCoLiveFeed:
             + "-"
             + str(random_number)
         )
+
+
+    # =====================================================
+    # SEARCH BOOKIECO BY TEAM / MATCH NAME
+    # =====================================================
+
+    def search_match(
+        self,
+        query
+    ):
+
+        self.reader = (
+            BookieCoMarketReader()
+        )
+
+
+        payload = {
+
+            "headers": {},
+
+            "requestArguments": {
+                "query": str(query)
+            }
+        }
+
+
+        body = json.dumps(
+            payload
+        ).encode(
+            "utf-8"
+        )
+
+
+        request = urllib.request.Request(
+            BOOKIECO_SEARCH_URL,
+            data=body,
+            method="POST"
+        )
+
+
+        request.add_header(
+            "Content-Type",
+            "application/json"
+        )
+
+
+        request.add_header(
+            "Accept",
+            "application/json"
+        )
+
+
+        request.add_header(
+            "Origin",
+            "https://agents.bookieco.com.cy"
+        )
+
+
+        request.add_header(
+            "Referer",
+            "https://agents.bookieco.com.cy/"
+        )
+
+
+        try:
+
+            with urllib.request.urlopen(
+                request,
+                timeout=15
+            ) as response:
+
+                raw_data = (
+                    response.read()
+                    .decode(
+                        "utf-8"
+                    )
+                )
+
+
+            data = json.loads(
+                raw_data
+            )
+
+
+            # Feed the complete response into our reader.
+            self.reader.process_message(
+                data
+            )
+
+
+            matches = list(
+                self.reader.matches.values()
+            )
+
+
+            results = []
+
+
+            for match in matches:
+
+                match_id = match.get(
+                    "match_id"
+                )
+
+
+                markets = (
+                    self.reader.get_markets(
+                        match_id
+                    )
+                )
+
+
+                market_1x2 = (
+                    self.reader.get_1x2_market(
+                        match_id
+                    )
+                )
+
+
+                results.append({
+
+                    "match":
+                        match,
+
+                    "match_id":
+                        match_id,
+
+                    "markets":
+                        markets,
+
+                    "market_1x2":
+                        market_1x2
+                })
+
+
+            return {
+
+                "success": True,
+
+                "query":
+                    query,
+
+                "results":
+                    results,
+
+                "matches_found":
+                    len(results),
+
+                "raw_response":
+                    data
+            }
+
+
+        except Exception as e:
+
+            return {
+
+                "success": False,
+
+                "query":
+                    query,
+
+                "error":
+                    str(e),
+
+                "results":
+                    []
+            }
 
 
     # =====================================================
@@ -80,20 +248,31 @@ class BookieCoLiveFeed:
             self.connected = False
 
             return {
+
                 "success": False,
-                "error": str(e),
-                "summary": self.reader.summary()
+
+                "error":
+                    str(e),
+
+                "summary":
+                    self.reader.summary()
             }
 
 
         self.connected = False
 
+
         return {
+
             "success": True,
-            "matches": list(
-                self.reader.matches.values()
-            ),
-            "summary": self.reader.summary()
+
+            "matches":
+                list(
+                    self.reader.matches.values()
+                ),
+
+            "summary":
+                self.reader.summary()
         }
 
 
@@ -107,7 +286,6 @@ class BookieCoLiveFeed:
         listen_seconds=10
     ):
 
-        # Start with clean data
         self.reader = (
             BookieCoMarketReader()
         )
@@ -128,10 +306,6 @@ class BookieCoLiveFeed:
 
                 self.connected = True
 
-
-                # =========================================
-                # EXACT BOOKIECO SUBSCRIPTION STRUCTURE
-                # =========================================
 
                 subscription = {
 
@@ -160,10 +334,6 @@ class BookieCoLiveFeed:
                 )
 
 
-                # =========================================
-                # RECEIVE DATA
-                # =========================================
-
                 try:
 
                     await asyncio.wait_for(
@@ -179,61 +349,24 @@ class BookieCoLiveFeed:
                     pass
 
 
-                # =========================================
-                # UNSUBSCRIBE CLEANLY
-                # =========================================
-
-                unsubscribe = {
-
-                    "unsubscribe": {
-
-                        "internalId":
-                            internal_id,
-
-                        "object":
-                            "match",
-
-                        "ids":
-                            str(match_id),
-
-                        "marketfilter":
-                            "all"
-                    }
-                }
-
-
-                try:
-
-                    await websocket.send(
-                        json.dumps(
-                            unsubscribe,
-                            separators=(",", ":")
-                        )
-                    )
-
-                except Exception:
-
-                    pass
-
-
         except Exception as e:
 
             self.connected = False
 
             return {
+
                 "success": False,
-                "match_id": match_id,
-                "internal_id": internal_id,
-                "error": str(e)
+
+                "match_id":
+                    match_id,
+
+                "error":
+                    str(e)
             }
 
 
         self.connected = False
 
-
-        # =============================================
-        # GET THE REQUESTED MATCH
-        # =============================================
 
         match = (
             self.reader.get_match(
@@ -242,21 +375,12 @@ class BookieCoLiveFeed:
         )
 
 
-        # =============================================
-        # GET ALL MARKETS RECEIVED
-        # =============================================
-
         markets = (
             self.reader.get_markets(
                 int(match_id)
             )
         )
 
-
-        # =============================================
-        # GET KNOWN 1X2 MARKET
-        # marketTypeId 3
-        # =============================================
 
         market_1x2 = (
             self.reader.get_1x2_market(
@@ -271,9 +395,6 @@ class BookieCoLiveFeed:
 
             "match_id":
                 int(match_id),
-
-            "internal_id":
-                internal_id,
 
             "match":
                 match,
@@ -319,10 +440,6 @@ class BookieCoLiveFeed:
         match_id
     ):
 
-        found_match = False
-        found_market = False
-
-
         while True:
 
             message = (
@@ -340,26 +457,12 @@ class BookieCoLiveFeed:
                     match_id
                 )
                 is not None
-            ):
-
-                found_match = True
-
-
-            if len(
-                self.reader.get_markets(
-                    match_id
-                )
-            ) > 0:
-
-                found_market = True
-
-
-            # Once we have both the match and at least one market,
-            # keep listening briefly so BookieCo can send
-            # the rest of the markets.
-            if (
-                found_match
-                and found_market
+                and
+                len(
+                    self.reader.get_markets(
+                        match_id
+                    )
+                ) > 0
             ):
 
                 try:
@@ -385,7 +488,7 @@ class BookieCoLiveFeed:
 
 
     # =====================================================
-    # FIND MATCH BY TEAM NAME
+    # HELPERS
     # =====================================================
 
     def find_match(
@@ -400,10 +503,6 @@ class BookieCoLiveFeed:
         )
 
 
-    # =====================================================
-    # GET MARKETS
-    # =====================================================
-
     def get_markets(
         self,
         match_id
@@ -415,10 +514,6 @@ class BookieCoLiveFeed:
             )
         )
 
-
-    # =====================================================
-    # GET MATCH + MARKETS
-    # =====================================================
 
     def get_match_with_markets(
         self,
