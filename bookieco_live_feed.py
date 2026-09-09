@@ -43,7 +43,7 @@ class BookieCoLiveFeed:
 
 
     # =====================================================
-    # SEARCH BOOKIECO BY TEAM / MATCH NAME
+    # SEARCH BOOKIECO
     # =====================================================
 
     def search_match(
@@ -51,15 +51,8 @@ class BookieCoLiveFeed:
         query
     ):
 
-        self.reader = (
-            BookieCoMarketReader()
-        )
-
-
         payload = {
-
             "headers": {},
-
             "requestArguments": {
                 "query": str(query)
             }
@@ -85,18 +78,15 @@ class BookieCoLiveFeed:
             "application/json"
         )
 
-
         request.add_header(
             "Accept",
             "application/json"
         )
 
-
         request.add_header(
             "Origin",
             "https://agents.bookieco.com.cy"
         )
-
 
         request.add_header(
             "Referer",
@@ -113,9 +103,7 @@ class BookieCoLiveFeed:
 
                 raw_data = (
                     response.read()
-                    .decode(
-                        "utf-8"
-                    )
+                    .decode("utf-8")
                 )
 
 
@@ -124,55 +112,150 @@ class BookieCoLiveFeed:
             )
 
 
-            # Feed the complete response into our reader.
-            self.reader.process_message(
-                data
+            # =============================================
+            # REAL BOOKIECO SEARCH RESPONSE STRUCTURE
+            #
+            # returnValue
+            #   -> results
+            #       -> matches
+            # =============================================
+
+            return_value = data.get(
+                "returnValue",
+                {}
             )
 
 
-            matches = list(
-                self.reader.matches.values()
+            if not isinstance(
+                return_value,
+                dict
+            ):
+
+                return_value = {}
+
+
+            results_object = (
+                return_value.get(
+                    "results",
+                    {}
+                )
             )
+
+
+            if not isinstance(
+                results_object,
+                dict
+            ):
+
+                results_object = {}
+
+
+            raw_matches = (
+                results_object.get(
+                    "matches",
+                    []
+                )
+            )
+
+
+            if not isinstance(
+                raw_matches,
+                list
+            ):
+
+                raw_matches = []
 
 
             results = []
 
 
-            for match in matches:
+            for raw_match in raw_matches:
 
-                match_id = match.get(
-                    "match_id"
-                )
+                if not isinstance(
+                    raw_match,
+                    dict
+                ):
+
+                    continue
 
 
-                markets = (
-                    self.reader.get_markets(
-                        match_id
+                match_id = (
+                    raw_match.get(
+                        "id"
                     )
                 )
 
 
-                market_1x2 = (
-                    self.reader.get_1x2_market(
-                        match_id
+                name = (
+                    raw_match.get(
+                        "name"
                     )
                 )
 
 
-                results.append({
-
-                    "match":
-                        match,
+                result = {
 
                     "match_id":
                         match_id,
 
-                    "markets":
-                        markets,
+                    "name":
+                        name,
 
-                    "market_1x2":
-                        market_1x2
-                })
+                    "code":
+                        raw_match.get(
+                            "code"
+                        ),
+
+                    "timestamp":
+                        raw_match.get(
+                            "ts"
+                        ),
+
+                    "status":
+                        raw_match.get(
+                            "status"
+                        ),
+
+                    "league_id":
+                        raw_match.get(
+                            "leagueId"
+                        ),
+
+                    "league_code":
+                        raw_match.get(
+                            "leagueCode"
+                        ),
+
+                    "league_name":
+                        raw_match.get(
+                            "leagueName"
+                        ),
+
+                    "category_name":
+                        raw_match.get(
+                            "categoryName"
+                        ),
+
+                    "sport_id":
+                        raw_match.get(
+                            "sportId"
+                        ),
+
+                    "sport_code":
+                        raw_match.get(
+                            "sportCode"
+                        ),
+
+                    "sport_name":
+                        raw_match.get(
+                            "sportName"
+                        )
+                }
+
+
+                results.append(
+                    result
+                )
 
 
             return {
@@ -182,14 +265,11 @@ class BookieCoLiveFeed:
                 "query":
                     query,
 
-                "results":
-                    results,
-
                 "matches_found":
                     len(results),
 
-                "raw_response":
-                    data
+                "results":
+                    results
             }
 
 
@@ -202,16 +282,75 @@ class BookieCoLiveFeed:
                 "query":
                     query,
 
-                "error":
-                    str(e),
+                "matches_found":
+                    0,
 
                 "results":
-                    []
+                    [],
+
+                "error":
+                    str(e)
             }
 
 
     # =====================================================
-    # NORMAL LIVE CONNECTION
+    # SEARCH FOR FOOTBALL MATCH ONLY
+    # =====================================================
+
+    def search_football_match(
+        self,
+        query
+    ):
+
+        result = self.search_match(
+            query
+        )
+
+
+        if not result.get(
+            "success"
+        ):
+
+            return result
+
+
+        football_matches = []
+
+
+        for match in result.get(
+            "results",
+            []
+        ):
+
+            if (
+                match.get(
+                    "sport_code"
+                )
+                == "soccer"
+            ):
+
+                football_matches.append(
+                    match
+                )
+
+
+        result[
+            "results"
+        ] = football_matches
+
+
+        result[
+            "matches_found"
+        ] = len(
+            football_matches
+        )
+
+
+        return result
+
+
+    # =====================================================
+    # NORMAL LIVE FEED
     # =====================================================
 
     async def connect(
@@ -228,6 +367,7 @@ class BookieCoLiveFeed:
             ) as websocket:
 
                 self.connected = True
+
 
                 try:
 
@@ -277,7 +417,7 @@ class BookieCoLiveFeed:
 
 
     # =====================================================
-    # REQUEST ONE SPECIFIC MATCH
+    # REQUEST SPECIFIC MATCH
     # =====================================================
 
     async def get_specific_match(
