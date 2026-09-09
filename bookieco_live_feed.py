@@ -13,19 +13,19 @@ class BookieCoLiveFeed:
     def __init__(self):
         self.reader = BookieCoMarketReader()
         self.connected = False
+
         self.debug_info = {
             "messages_received": 0,
-            "first_message_type": None,
-            "first_message_size": 0,
-            "first_message_keys": [],
+            "message_types": {},
+            "subscription_keys": [],
+            "subscription_value_type": None,
+            "subscription_sample_keys": [],
+            "objects_found": 0,
+            "object_types_found": {}
         }
 
 
     async def connect(self, listen_seconds=10):
-        """
-        Connect to the BookieCo WebSocket and listen
-        for betting data for a short period.
-        """
 
         try:
 
@@ -55,7 +55,6 @@ class BookieCoLiveFeed:
             return {
                 "success": False,
                 "error": str(e),
-                "matches": [],
                 "summary": self.reader.summary(),
                 "debug": self.debug_info
             }
@@ -82,82 +81,128 @@ class BookieCoLiveFeed:
             self.debug_info["messages_received"] += 1
 
 
-            # Save useful information about the FIRST message only
-            if self.debug_info["messages_received"] == 1:
-
-                try:
-                    self.debug_info["first_message_size"] = len(message)
-                except Exception:
-                    self.debug_info["first_message_size"] = 0
-
-
             try:
-
                 data = json.loads(message)
 
             except Exception:
                 continue
 
 
-            # Record structure of first valid JSON message
-            if self.debug_info["first_message_type"] is None:
+            data_type = type(data).__name__
 
-                self.debug_info["first_message_type"] = type(data).__name__
-
-                if isinstance(data, dict):
-
-                    self.debug_info["first_message_keys"] = list(
-                        data.keys()
-                    )[:30]
-
-                elif isinstance(data, list):
-
-                    self.debug_info["first_message_keys"] = [
-                        f"LIST_LENGTH={len(data)}"
-                    ]
+            self.debug_info["message_types"][data_type] = (
+                self.debug_info["message_types"].get(
+                    data_type,
+                    0
+                ) + 1
+            )
 
 
-            # ---------- NORMAL SINGLE OBJECT ----------
-            if isinstance(data, dict):
+            # Inspect subscription wrapper
+            if isinstance(data, dict) and "subscription" in data:
 
-                self.reader.process_message(data)
+                subscription = data.get("subscription")
 
-
-                # Sometimes data may be nested inside common container keys
-                possible_containers = [
-                    "data",
-                    "items",
-                    "matches",
-                    "markets",
-                    "result",
-                    "results",
-                    "payload"
-                ]
-
-                for key in possible_containers:
-
-                    nested = data.get(key)
-
-                    if isinstance(nested, list):
-
-                        for item in nested:
-
-                            if isinstance(item, dict):
-                                self.reader.process_message(item)
+                self.debug_info["subscription_value_type"] = (
+                    type(subscription).__name__
+                )
 
 
-                    elif isinstance(nested, dict):
+                if isinstance(subscription, dict):
 
-                        self.reader.process_message(nested)
+                    if not self.debug_info["subscription_keys"]:
+
+                        self.debug_info["subscription_keys"] = list(
+                            subscription.keys()
+                        )[:30]
 
 
-            # ---------- LIST OF OBJECTS ----------
-            elif isinstance(data, list):
+                elif isinstance(subscription, list):
 
-                for item in data:
+                    if not self.debug_info["subscription_keys"]:
 
-                    if isinstance(item, dict):
-                        self.reader.process_message(item)
+                        self.debug_info["subscription_keys"] = [
+                            "LIST_LENGTH=" + str(len(subscription))
+                        ]
+
+
+                    if subscription:
+
+                        first_item = subscription[0]
+
+                        if isinstance(first_item, dict):
+
+                            if not self.debug_info[
+                                "subscription_sample_keys"
+                            ]:
+
+                                self.debug_info[
+                                    "subscription_sample_keys"
+                                ] = list(
+                                    first_item.keys()
+                                )[:30]
+
+
+            # Recursively search this message for
+            # BookieCo match and market objects.
+            self._scan_for_objects(data)
+
+
+    def _scan_for_objects(self, value):
+
+        # ---------- DICTIONARY ----------
+        if isinstance(value, dict):
+
+            object_type = value.get("object")
+
+
+            if object_type:
+
+                object_type_string = str(object_type)
+
+                self.debug_info[
+                    "object_types_found"
+                ][object_type_string] = (
+                    self.debug_info[
+                        "object_types_found"
+                    ].get(
+                        object_type_string,
+                        0
+                    ) + 1
+                )
+
+
+            # If this looks like a BookieCo match or market,
+            # send it to our market reader.
+            if object_type in ["match", "market"]:
+
+                result = self.reader.process_message(
+                    value
+                )
+
+                if result is not None:
+
+                    self.debug_info[
+                        "objects_found"
+                    ] += 1
+
+
+            # Search everything nested inside this dictionary.
+            for nested_value in value.values():
+
+                self._scan_for_objects(
+                    nested_value
+                )
+
+
+        # ---------- LIST ----------
+        elif isinstance(value, list):
+
+            for item in value:
+
+                self._scan_for_objects(
+                    item
+                )
 
 
     def find_match(self, team_name):
