@@ -160,6 +160,7 @@ with main_column:
                     ):
 
                         scout_report = run_weekly_match_scout(
+                            client,
                             user_prompt
                         )
 
