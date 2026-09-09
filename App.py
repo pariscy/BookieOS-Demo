@@ -2,6 +2,7 @@ import streamlit as st
 from openai import OpenAI
 
 from weekly_match_scout import run_weekly_match_scout
+from sports_news_monitor import run_sports_news_monitor
 from bet_researcher import run_bet_researcher
 from marketing_manager import run_marketing_manager
 
@@ -144,7 +145,7 @@ with main_column:
             )
 
             # =================================================
-            # MARKETING WORKFLOW
+            # FULL SPORTS MARKETING WORKFLOW
             # =================================================
 
             if use_scout:
@@ -175,7 +176,30 @@ with main_column:
                     st.divider()
 
                     # =========================================
-                    # AGENT 2 — BET RESEARCHER
+                    # AGENT 2 — SPORTS NEWS MONITOR
+                    # =========================================
+
+                    with st.spinner(
+                        "🚨 Sports News Monitor is checking injuries, suspensions and major news..."
+                    ):
+
+                        news_report = run_sports_news_monitor(
+                            client,
+                            scout_report
+                        )
+
+                    st.markdown(
+                        "### 🚨 Sports News Monitor"
+                    )
+
+                    st.write(
+                        news_report
+                    )
+
+                    st.divider()
+
+                    # =========================================
+                    # AGENT 3 — BET RESEARCHER
                     # =========================================
 
                     with st.spinner(
@@ -183,15 +207,38 @@ with main_column:
                     ):
 
                         researcher_task = f"""
-The Weekly Match Scout produced the report below.
+The Weekly Match Scout has selected sporting events
+for possible BookieCo marketing.
+
+The Sports News Monitor has also researched current
+injuries, suspensions, player availability and other
+important developments.
 
 Analyse EVERY proposed football betting idea.
 
-For each match:
+Use BOTH reports.
+
+If the Sports News Monitor found an injury,
+suspension or other important development, take
+that information into account.
+
+If a proposed player bet involves a player who is:
+
+- injured
+- suspended
+- doubtful
+- unlikely to start
+- unavailable
+
+DO NOT recommend that player betting idea.
+
+Find a better alternative when possible.
+
+For each football match:
 
 1. Research current team form.
 2. Research important player information.
-3. Research injuries and suspensions when relevant.
+3. Research injuries and suspensions.
 4. Research recent statistics.
 5. Evaluate the proposed betting idea.
 
@@ -201,7 +248,8 @@ STRONG
 REASONABLE
 WEAK
 
-We want interesting betting ideas for BookieCo marketing.
+We want interesting betting ideas for BookieCo
+marketing.
 
 Avoid boring extremely safe selections.
 
@@ -219,7 +267,8 @@ Interesting ideas can include:
 - Cards
 - Logical bet-builder combinations
 
-Do NOT make combinations complicated just for the sake of it.
+Do NOT make combinations complicated just for
+the sake of it.
 
 IMPORTANT:
 
@@ -227,15 +276,23 @@ Do NOT provide betting odds.
 
 Do NOT invent BookieCo odds.
 
-Do NOT claim that a betting market is available at BookieCo.
+Do NOT claim that a betting market is available
+at BookieCo.
 
-Market availability will be verified by another system in the future.
+Market availability will be verified by another
+system in the future.
 
 If an idea is weak, suggest a better betting angle.
 
-SCOUT REPORT:
+
+WEEKLY MATCH SCOUT REPORT:
 
 {scout_report}
+
+
+SPORTS NEWS MONITOR REPORT:
+
+{news_report}
 """
 
                         research_report = run_bet_researcher(
@@ -254,7 +311,7 @@ SCOUT REPORT:
                     st.divider()
 
                     # =========================================
-                    # AGENT 3 — MARKETING MANAGER
+                    # AGENT 4 — MARKETING MANAGER
                     # =========================================
 
                     with st.spinner(
@@ -275,7 +332,7 @@ SCOUT REPORT:
                     )
 
                     st.success(
-                        "Marketing analysis complete."
+                        "Sports marketing analysis complete."
                     )
 
                 except Exception as e:
@@ -309,16 +366,27 @@ CONNECTED SPECIALIST AGENTS:
 Researches upcoming sporting events that may
 be useful for BookieCo marketing.
 
-2. Bet Researcher
+2. Sports News Monitor
+
+Checks important current sports news including
+major injuries, suspensions, player availability,
+manager changes, postponements and other
+developments that could affect BookieCo's
+sports analysis.
+
+3. Bet Researcher
 
 Researches teams, players, statistics and
 proposed football betting ideas.
 
-3. Marketing Manager
+It receives information from both the Weekly
+Match Scout and Sports News Monitor.
 
-Receives the Scout and Bet Researcher reports
-and decides which sporting opportunities
-BookieCo should actually market.
+4. Marketing Manager
+
+Receives the research and decides which
+sporting opportunities BookieCo should
+actually market.
 
 The Marketing Manager evaluates every day
 independently.
@@ -328,11 +396,11 @@ There are no automatic skip days.
 If several genuinely strong opportunities
 exist on the same day, several may be selected.
 
-PLANNED AGENTS:
+PLANNED MARKETING AGENTS:
 
-4. Promotion Selector
-5. Creative Director
-6. Social Media Writer
+- Promotion Selector
+- Creative Director
+- Social Media Writer
 
 BookieOS currently does NOT have access to
 BookieCo live betting markets or odds.
@@ -382,6 +450,14 @@ with agent_column:
     )
 
     st.write(
+        "🟢 🚨 Sports News Monitor"
+    )
+
+    st.caption(
+        "CONNECTED · AUTO"
+    )
+
+    st.write(
         "🟢 🧠 Bet Researcher"
     )
 
@@ -402,7 +478,7 @@ with agent_column:
     )
 
     st.caption(
-        "COMING NEXT"
+        "WAITING FOR COMPANY FILES"
     )
 
     st.write(
