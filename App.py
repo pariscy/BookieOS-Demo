@@ -3,6 +3,7 @@ from openai import OpenAI
 
 from weekly_match_scout import run_weekly_match_scout
 from bet_researcher import run_bet_researcher
+from marketing_manager import run_marketing_manager
 
 
 # =========================================================
@@ -57,7 +58,6 @@ with main_column:
         "Ask BookieOS in English or Greek."
     )
 
-
     # -----------------------------------------------------
     # VOICE INPUT
     # -----------------------------------------------------
@@ -91,7 +91,6 @@ with main_column:
                 f"Voice error: {e}"
             )
 
-
     # -----------------------------------------------------
     # TEXT INPUT
     # -----------------------------------------------------
@@ -102,7 +101,6 @@ with main_column:
 
     user_prompt = text_prompt or voice_prompt
 
-
     # -----------------------------------------------------
     # REQUEST
     # -----------------------------------------------------
@@ -112,13 +110,11 @@ with main_column:
         with st.chat_message("user"):
             st.write(user_prompt)
 
-
         with st.chat_message("assistant"):
 
             lower_prompt = user_prompt.lower()
 
             scout_words = [
-
                 "weekly match",
                 "match scout",
                 "matches this week",
@@ -142,33 +138,30 @@ with main_column:
                 "βρες αγωνες"
             ]
 
-
             use_scout = any(
                 word in lower_prompt
                 for word in scout_words
             )
 
-
             # =================================================
-            # WEEKLY MATCH WORKFLOW
+            # MARKETING WORKFLOW
             # =================================================
 
             if use_scout:
 
                 try:
 
-                    # -----------------------------------------
-                    # AGENT 1
-                    # -----------------------------------------
+                    # =========================================
+                    # AGENT 1 — WEEKLY MATCH SCOUT
+                    # =========================================
 
                     with st.spinner(
-                        "Weekly Match Scout is researching..."
+                        "🔎 Weekly Match Scout is researching..."
                     ):
 
                         scout_report = run_weekly_match_scout(
                             user_prompt
                         )
-
 
                     st.markdown(
                         "### 🔎 Weekly Match Scout"
@@ -180,13 +173,12 @@ with main_column:
 
                     st.divider()
 
-
-                    # -----------------------------------------
-                    # AGENT 2
-                    # -----------------------------------------
+                    # =========================================
+                    # AGENT 2 — BET RESEARCHER
+                    # =========================================
 
                     with st.spinner(
-                        "Bet Researcher is analysing..."
+                        "🧠 Bet Researcher is analysing..."
                     ):
 
                         researcher_task = f"""
@@ -249,7 +241,6 @@ SCOUT REPORT:
                             researcher_task
                         )
 
-
                     st.markdown(
                         "### 🧠 Bet Researcher"
                     )
@@ -258,13 +249,38 @@ SCOUT REPORT:
                         research_report
                     )
 
+                    st.divider()
+
+                    # =========================================
+                    # AGENT 3 — MARKETING MANAGER
+                    # =========================================
+
+                    with st.spinner(
+                        "📣 Marketing Manager is building the weekly plan..."
+                    ):
+
+                        marketing_report = run_marketing_manager(
+                            scout_report,
+                            research_report
+                        )
+
+                    st.markdown(
+                        "### 📣 Marketing Manager"
+                    )
+
+                    st.write(
+                        marketing_report
+                    )
+
+                    st.success(
+                        "Marketing analysis complete."
+                    )
 
                 except Exception as e:
 
                     st.error(
                         f"Agent error: {e}"
                     )
-
 
             # =================================================
             # NORMAL BOOKIEOS
@@ -284,16 +300,37 @@ You are BookieOS.
 You are the central AI assistant for BookieCo,
 a retail betting company in Cyprus.
 
-Currently connected specialist agents:
+CONNECTED SPECIALIST AGENTS:
 
 1. Weekly Match Scout
+
+Researches upcoming sporting events that may
+be useful for BookieCo marketing.
+
 2. Bet Researcher
 
-Weekly Match Scout researches upcoming sporting
-events that may be useful for BookieCo marketing.
+Researches teams, players, statistics and
+proposed football betting ideas.
 
-Bet Researcher researches proposed football
-betting ideas and evaluates whether they make sense.
+3. Marketing Manager
+
+Receives the Scout and Bet Researcher reports
+and decides which sporting opportunities
+BookieCo should actually market.
+
+The Marketing Manager evaluates every day
+independently.
+
+There are no automatic skip days.
+
+If several genuinely strong opportunities
+exist on the same day, several may be selected.
+
+PLANNED AGENTS:
+
+4. Promotion Selector
+5. Creative Director
+6. Social Media Writer
 
 BookieOS currently does NOT have access to
 BookieCo live betting markets or odds.
@@ -302,13 +339,6 @@ Never invent odds.
 
 Never claim that a betting market is available
 at BookieCo unless it has actually been verified.
-
-Future marketing agents will include:
-
-Marketing Manager
-Promotion Selector
-Creative Director
-Social Media Writer
 
 If the user speaks Greek, answer in Greek.
 
@@ -323,7 +353,6 @@ Keep responses practical and concise.
                     st.write(
                         response.output_text
                     )
-
 
                 except Exception as e:
 
@@ -342,7 +371,6 @@ with agent_column:
         "Live Agents"
     )
 
-
     st.write(
         "🟢 🔎 Weekly Match Scout"
     )
@@ -350,7 +378,6 @@ with agent_column:
     st.caption(
         "CONNECTED"
     )
-
 
     st.write(
         "🟢 🧠 Bet Researcher"
@@ -360,24 +387,21 @@ with agent_column:
         "CONNECTED · AUTO"
     )
 
-
     st.write(
-        "⚪ 📣 Marketing Manager"
+        "🟢 📣 Marketing Manager"
     )
 
     st.caption(
-        "COMING NEXT"
+        "CONNECTED · AUTO"
     )
-
 
     st.write(
         "⚪ 🎁 Promotion Selector"
     )
 
     st.caption(
-        "PLANNED"
+        "COMING NEXT"
     )
-
 
     st.write(
         "⚪ 🎨 Creative Director"
@@ -387,7 +411,6 @@ with agent_column:
         "PLANNED"
     )
 
-
     st.write(
         "⚪ ✍️ Social Media Writer"
     )
@@ -396,9 +419,7 @@ with agent_column:
         "PLANNED"
     )
 
-
     st.divider()
-
 
     st.success(
         "BOOKIEOS ONLINE"
