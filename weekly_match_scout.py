@@ -43,7 +43,27 @@ When giving recommendations, explain WHY each event is worth considering.
 def run_weekly_match_scout(client: OpenAI, task: str) -> str:
     response = client.responses.create(
         model="gpt-5.6-luna",
-        instructions=SCOUT_INSTRUCTIONS,
+        instructions=SCOUT_INSTRUCTIONS + """
+
+LIVE RESEARCH:
+You have access to web search.
+
+When the user asks about upcoming matches, fixtures, sporting events, dates, form,
+competitions or schedules, SEARCH THE WEB before answering.
+
+Use current, reliable sources.
+Verify dates and fixtures before recommending them.
+Do not rely only on your memory for upcoming events.
+
+When researching a week:
+1. Find the actual fixtures/events in that date range.
+2. Identify the strongest marketing opportunities.
+3. Explain why each one is interesting.
+4. If nothing is genuinely worthwhile, say so.
+""",
+        tools=[
+            {"type": "web_search"}
+        ],
         input=task
     )
 
