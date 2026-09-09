@@ -13,6 +13,12 @@ class BookieCoLiveFeed:
     def __init__(self):
         self.reader = BookieCoMarketReader()
         self.connected = False
+        self.debug_info = {
+            "messages_received": 0,
+            "first_message_type": None,
+            "first_message_size": 0,
+            "first_message_keys": [],
+        }
 
 
     async def connect(self, listen_seconds=10):
@@ -50,7 +56,8 @@ class BookieCoLiveFeed:
                 "success": False,
                 "error": str(e),
                 "matches": [],
-                "summary": self.reader.summary()
+                "summary": self.reader.summary(),
+                "debug": self.debug_info
             }
 
 
@@ -61,7 +68,8 @@ class BookieCoLiveFeed:
             "matches": list(
                 self.reader.matches.values()
             ),
-            "summary": self.reader.summary()
+            "summary": self.reader.summary(),
+            "debug": self.debug_info
         }
 
 
@@ -71,14 +79,85 @@ class BookieCoLiveFeed:
 
             message = await websocket.recv()
 
+            self.debug_info["messages_received"] += 1
+
+
+            # Save useful information about the FIRST message only
+            if self.debug_info["messages_received"] == 1:
+
+                try:
+                    self.debug_info["first_message_size"] = len(message)
+                except Exception:
+                    self.debug_info["first_message_size"] = 0
+
+
             try:
+
                 data = json.loads(message)
 
             except Exception:
                 continue
 
 
-            self.reader.process_message(data)
+            # Record structure of first valid JSON message
+            if self.debug_info["first_message_type"] is None:
+
+                self.debug_info["first_message_type"] = type(data).__name__
+
+                if isinstance(data, dict):
+
+                    self.debug_info["first_message_keys"] = list(
+                        data.keys()
+                    )[:30]
+
+                elif isinstance(data, list):
+
+                    self.debug_info["first_message_keys"] = [
+                        f"LIST_LENGTH={len(data)}"
+                    ]
+
+
+            # ---------- NORMAL SINGLE OBJECT ----------
+            if isinstance(data, dict):
+
+                self.reader.process_message(data)
+
+
+                # Sometimes data may be nested inside common container keys
+                possible_containers = [
+                    "data",
+                    "items",
+                    "matches",
+                    "markets",
+                    "result",
+                    "results",
+                    "payload"
+                ]
+
+                for key in possible_containers:
+
+                    nested = data.get(key)
+
+                    if isinstance(nested, list):
+
+                        for item in nested:
+
+                            if isinstance(item, dict):
+                                self.reader.process_message(item)
+
+
+                    elif isinstance(nested, dict):
+
+                        self.reader.process_message(nested)
+
+
+            # ---------- LIST OF OBJECTS ----------
+            elif isinstance(data, list):
+
+                for item in data:
+
+                    if isinstance(item, dict):
+                        self.reader.process_message(item)
 
 
     def find_match(self, team_name):
