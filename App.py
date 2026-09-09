@@ -1,5 +1,4 @@
 import asyncio
-import json
 import streamlit as st
 from openai import OpenAI
 
@@ -7,6 +6,10 @@ from weekly_match_scout import run_weekly_match_scout
 from bet_researcher import run_bet_researcher
 from bookieco_live_feed import BookieCoLiveFeed
 
+
+# =========================================================
+# PAGE
+# =========================================================
 
 st.set_page_config(
     page_title="BookieOS",
@@ -56,6 +59,7 @@ with main:
     # =====================================================
 
     if "messages" not in st.session_state:
+
         st.session_state.messages = []
 
 
@@ -78,6 +82,7 @@ with main:
         "🎤 Talk to BookieOS"
     )
 
+
     voice_prompt = None
 
 
@@ -97,9 +102,11 @@ with main:
                     )
                 )
 
+
                 voice_prompt = (
                     transcription.text
                 )
+
 
         except Exception as e:
 
@@ -124,7 +131,7 @@ with main:
 
 
     # =====================================================
-    # PROCESS MESSAGE
+    # PROCESS
     # =====================================================
 
     if prompt:
@@ -182,7 +189,7 @@ with main:
 
 
             # =================================================
-            # WEEKLY MATCH SCOUT
+            # AGENT 1 + AGENT 2
             # =================================================
 
             if use_scout:
@@ -198,124 +205,6 @@ with main:
                         )
                     )
 
-
-                # =================================================
-                # CURRENT BOOKIECO SNAPSHOT
-                # =================================================
-
-                with st.spinner(
-                    "📡 Checking BookieCo live markets..."
-                ):
-
-                    feed = BookieCoLiveFeed()
-
-
-                    try:
-
-                        feed_result = (
-                            asyncio.run(
-                                feed.connect(
-                                    listen_seconds=10
-                                )
-                            )
-                        )
-
-                    except Exception as e:
-
-                        feed_result = {
-                            "success": False,
-                            "error": str(e)
-                        }
-
-
-                bookieco_snapshot = []
-
-
-                if feed_result.get("success"):
-
-                    for match in (
-                        feed.reader.matches.values()
-                    ):
-
-                        match_id = (
-                            match.get(
-                                "match_id"
-                            )
-                        )
-
-
-                        markets = (
-                            feed.reader.get_markets(
-                                match_id
-                            )
-                        )
-
-
-                        clean_markets = []
-
-
-                        for market in markets:
-
-                            clean_markets.append({
-
-                                "market_type_id":
-                                    market.get(
-                                        "market_type_id"
-                                    ),
-
-                                "special":
-                                    market.get(
-                                        "special"
-                                    ),
-
-                                "is_suspended":
-                                    market.get(
-                                        "is_suspended"
-                                    ),
-
-                                "selections":
-                                    market.get(
-                                        "selections",
-                                        []
-                                    )
-                            })
-
-
-                        bookieco_snapshot.append({
-
-                            "match_id":
-                                match_id,
-
-                            "competitors":
-                                match.get(
-                                    "competitors",
-                                    []
-                                ),
-
-                            "start_time":
-                                match.get(
-                                    "start_time"
-                                ),
-
-                            "number_of_markets":
-                                match.get(
-                                    "number_of_markets"
-                                ),
-
-                            "markets":
-                                clean_markets
-                        })
-
-
-                bookieco_text = json.dumps(
-                    bookieco_snapshot,
-                    ensure_ascii=False
-                )
-
-
-                # =================================================
-                # BET RESEARCHER
-                # =================================================
 
                 with st.spinner(
                     "🔎 Bet Researcher is analysing..."
@@ -334,49 +223,23 @@ SCOUT REPORT
 END SCOUT REPORT
 ========================
 
+Analyse EVERY proposed football betting market.
 
-Below is a live BookieCo snapshot:
+For every bet:
 
-========================
-BOOKIECO LIVE DATA
-========================
-
-{bookieco_text}
-
-========================
-END BOOKIECO DATA
-========================
-
-
-Analyse EVERY proposed football bet.
-
-For each proposed bet:
-
-- Research whether it makes statistical sense.
+- Research whether the idea makes sense.
 - Rate it STRONG, REASONABLE or WEAK.
 - Prefer interesting marketing bets.
-- General target estimated decimal odds: 2.00 to 6.00.
-- Avoid boring low-price bets when possible.
+- Prefer estimated decimal odds around 2.00 to 6.00.
+- Avoid boring low-odds selections when possible.
 - Suggest a better alternative when appropriate.
-- Never invent BookieCo odds.
-- Never invent BookieCo markets.
 
-marketTypeId 3 is confirmed as standard football 1X2.
+Never invent BookieCo odds.
 
-For marketTypeId 3:
+Never claim that a market is available at BookieCo unless
+actual BookieCo data verifies it.
 
-1 = Home
-X = Draw
-2 = Away
-
-Other BookieCo marketTypeId values are not mapped yet.
-
-Do not guess their meaning.
-
-If an advanced market cannot yet be verified, say:
-
-ADVANCED MARKET VERIFICATION:
-WAITING FOR MARKET TYPE MAPPING
+BookieCo integration is currently being connected automatically.
 """
 
 
@@ -413,20 +276,23 @@ WAITING FOR MARKET TYPE MAPPING
                         instructions="""
 You are BookieOS, the internal AI operating system for BookieCo.
 
-Connected:
+CONNECTED:
 
 - Weekly Match Scout
 - Bet Researcher
-- BookieCo live-data connector
+- BookieCo data connector
 
-Not yet connected:
+The BookieCo connector can now search the company's
+sports database for matches and retrieve BookieCo match IDs.
+
+Full automatic market and odds verification is still being completed.
+
+Never invent BookieCo odds or market availability.
+
+NOT YET CONNECTED:
 
 - Marketing Manager
 - Promotion Selector
-
-BookieCo marketTypeId 3 is confirmed as standard 1X2.
-
-Never invent BookieCo odds or market availability.
 
 If the user speaks Greek, respond in Greek.
 If the user speaks English, respond in English.
@@ -469,9 +335,13 @@ Be concise and professional.
         })
 
 
-        with st.chat_message("assistant"):
+        with st.chat_message(
+            "assistant"
+        ):
 
-            st.write(answer)
+            st.write(
+                answer
+            )
 
 
 # =========================================================
@@ -525,45 +395,37 @@ with agents:
 
 
     # =====================================================
-    # BOOKIECO SEARCH TEST
+    # BOOKIECO SEARCH
     # =====================================================
 
     st.markdown(
-        "**📡 BookieCo Market Feed**"
+        "**🔎 BookieCo Match Search**"
     )
 
 
     if st.button(
-        "🔎 Search BookieCo: Olympiacos"
+        "🔎 Search Olympiacos"
     ):
 
         with st.spinner(
-            "Searching BookieCo for Olympiacos..."
+            "Searching BookieCo..."
         ):
 
-            search_feed = (
+            feed = (
                 BookieCoLiveFeed()
             )
 
 
-            search_result = (
-                search_feed.search_match(
+            result = (
+                feed.search_football_match(
                     "Olympia"
                 )
             )
 
 
-        if search_result.get(
+        if result.get(
             "success"
         ):
-
-            matches_found = (
-                search_result.get(
-                    "matches_found",
-                    0
-                )
-            )
-
 
             st.success(
                 "✅ BookieCo search connected"
@@ -571,166 +433,77 @@ with agents:
 
 
             st.write(
-                "Matches found:",
-                matches_found
+                "Football matches found:",
+                result.get(
+                    "matches_found",
+                    0
+                )
             )
 
 
-            results = (
-                search_result.get(
+            matches = (
+                result.get(
                     "results",
                     []
                 )
             )
 
 
-            if results:
+            if matches:
 
-                for result in results:
+                for match in matches:
 
-                    match = (
-                        result.get(
-                            "match",
-                            {}
+                    st.markdown("---")
+
+
+                    st.markdown(
+                        "### ⚽ "
+                        + str(
+                            match.get(
+                                "name",
+                                "Unknown match"
+                            )
                         )
                     )
 
 
-                    competitors = (
+                    st.write(
+                        "**BookieCo Match ID:**",
                         match.get(
-                            "competitors",
-                            []
-                        )
-                    )
-
-
-                    match_id = (
-                        result.get(
                             "match_id"
                         )
                     )
 
 
-                    market_1x2 = (
-                        result.get(
-                            "market_1x2"
-                        )
-                    )
-
-
-                    st.markdown("---")
-
-
-                    if len(
-                        competitors
-                    ) >= 2:
-
-                        match_name = (
-                            str(
-                                competitors[0]
-                            )
-                            + " vs "
-                            + str(
-                                competitors[1]
-                            )
-                        )
-
-                    else:
-
-                        match_name = (
-                            str(
-                                competitors
-                            )
-                        )
-
-
-                    st.markdown(
-                        "### ⚽ "
-                        + match_name
-                    )
-
-
                     st.write(
-                        "BookieCo Match ID:",
-                        match_id
-                    )
-
-
-                    st.write(
-                        "Available markets:",
+                        "**Competition:**",
                         match.get(
-                            "number_of_markets"
+                            "league_name"
                         )
                     )
 
 
-                    # =====================================
-                    # REAL 1X2 ODDS
-                    # =====================================
-
-                    if market_1x2:
-
-                        st.markdown(
-                            "#### 💰 Real BookieCo 1X2 Odds"
+                    st.write(
+                        "**Country/Category:**",
+                        match.get(
+                            "category_name"
                         )
+                    )
 
 
-                        odds = {}
-
-
-                        for selection in (
-                            market_1x2.get(
-                                "selections",
-                                []
-                            )
-                        ):
-
-                            outcome = (
-                                selection.get(
-                                    "outcome"
-                                )
-                            )
-
-                            odd = (
-                                selection.get(
-                                    "odds"
-                                )
-                            )
-
-                            odds[
-                                outcome
-                            ] = odd
-
-
-                        st.write(
-                            "🏠 Home:",
-                            odds.get("1")
+                    st.write(
+                        "**Status:**",
+                        match.get(
+                            "status"
                         )
-
-
-                        st.write(
-                            "🤝 Draw:",
-                            odds.get("X")
-                        )
-
-
-                        st.write(
-                            "✈️ Away:",
-                            odds.get("2")
-                        )
-
-
-                    else:
-
-                        st.warning(
-                            "Match found, but 1X2 odds were not included in the search response."
-                        )
+                    )
 
 
             else:
 
                 st.warning(
-                    "BookieCo responded, but no matching events were parsed."
+                    "BookieCo responded successfully, "
+                    "but no football matches were returned."
                 )
 
 
@@ -742,7 +515,7 @@ with agents:
 
 
             st.write(
-                search_result.get(
+                result.get(
                     "error",
                     "Unknown error"
                 )
@@ -753,11 +526,16 @@ with agents:
 
 
     # =====================================================
-    # NORMAL LIVE FEED TEST
+    # LIVE FEED
     # =====================================================
 
+    st.markdown(
+        "**📡 BookieCo Live Feed**"
+    )
+
+
     if st.button(
-        "🧪 Test BookieCo Live Feed"
+        "🧪 Test Live Feed"
     ):
 
         with st.spinner(
@@ -779,6 +557,7 @@ with agents:
                     )
                 )
 
+
             except Exception as e:
 
                 result = {
@@ -791,16 +570,16 @@ with agents:
             "success"
         ):
 
-            st.success(
-                "✅ BookieCo feed connected"
-            )
-
-
             summary = (
                 result.get(
                     "summary",
                     {}
                 )
+            )
+
+
+            st.success(
+                "✅ BookieCo feed connected"
             )
 
 
@@ -830,82 +609,51 @@ with agents:
             )
 
 
-            if matches:
+            for match in matches:
 
-                st.markdown(
-                    "### ⚽ Matches found"
+                competitors = (
+                    match.get(
+                        "competitors",
+                        []
+                    )
                 )
 
 
-                for match in matches:
+                if len(
+                    competitors
+                ) >= 2:
 
-                    competitors = (
-                        match.get(
-                            "competitors",
-                            []
+                    name = (
+                        str(
+                            competitors[0]
+                        )
+                        + " vs "
+                        + str(
+                            competitors[1]
+                        )
+                    )
+
+                else:
+
+                    name = (
+                        str(
+                            competitors
                         )
                     )
 
 
-                    match_id = (
+                st.write(
+                    "⚽ " + name
+                )
+
+
+                st.caption(
+                    "Match ID: "
+                    + str(
                         match.get(
                             "match_id"
                         )
                     )
-
-
-                    number_of_markets = (
-                        match.get(
-                            "number_of_markets"
-                        )
-                    )
-
-
-                    if len(
-                        competitors
-                    ) >= 2:
-
-                        match_name = (
-                            str(
-                                competitors[0]
-                            )
-                            + " vs "
-                            + str(
-                                competitors[1]
-                            )
-                        )
-
-                    else:
-
-                        match_name = (
-                            str(
-                                competitors
-                            )
-                        )
-
-
-                    st.write(
-                        "⚽ "
-                        + match_name
-                    )
-
-
-                    st.caption(
-                        "Match ID: "
-                        + str(
-                            match_id
-                        )
-                        + " | Markets: "
-                        + str(
-                            number_of_markets
-                        )
-                    )
-
-
-            else:
-
-                st.warning(
-                    "Connected, but no matches were found."
                 )
 
 
