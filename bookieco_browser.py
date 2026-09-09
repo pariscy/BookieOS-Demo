@@ -1,4 +1,5 @@
 from playwright.sync_api import sync_playwright
+import json
 
 
 BOOKIECO_URL = "https://agents.bookieco.com.cy/"
@@ -24,31 +25,73 @@ def search_bookieco(match_text="Olympiacos"):
             }
         )
 
+        captured = []
+
+
+        # Capture data the website itself receives
+        def capture_response(response):
+
+            url = response.url
+
+            if (
+                "/api/" in url
+                or "/sports/" in url
+            ):
+
+                try:
+
+                    text = response.text()
+
+                    if text:
+                        captured.append({
+                            "url": url,
+                            "data": text[:20000]
+                        })
+
+                except:
+                    pass
+
+
+        page.on(
+            "response",
+            capture_response
+        )
+
+
         page.goto(
             BOOKIECO_URL,
             wait_until="domcontentloaded",
             timeout=60000
         )
 
-        # Give the betting application time to load
-        page.wait_for_timeout(15000)
 
-        # Get visible text
-        body_text = page.locator("body").inner_text()
+        # Let the website run normally
+        page.wait_for_timeout(20000)
 
-        # If normal text is empty, also inspect the HTML
-        if not body_text.strip():
 
-            html = page.content()
+        body_text = ""
 
-            return (
-                "PAGE TEXT WAS EMPTY\n\n"
-                "PAGE TITLE:\n"
-                + page.title()
-                + "\n\nURL:\n"
-                + page.url
-                + "\n\nHTML PREVIEW:\n"
-                + html[:10000]
-            )
+        try:
+            body_text = page.locator(
+                "body"
+            ).inner_text()
+        except:
+            pass
 
-        return body_text
+
+        result = {
+            "page_url": page.url,
+            "page_title": page.title(),
+            "visible_text": body_text,
+            "network_data": captured
+        }
+
+
+        browser.close()
+
+
+        return json.dumps(
+            result,
+            indent=2,
+            ensure_ascii=False
+        )
