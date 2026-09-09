@@ -14,17 +14,24 @@ st.set_page_config(
 )
 
 
+# ---------- OPENAI ----------
 client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
 
 
+# ---------- HEADER ----------
 st.title("◉ BOOKIEOS")
 st.caption("BookieCo Artificial Intelligence Operating System")
 
 st.divider()
 
 
+# ---------- LAYOUT ----------
 main, agents = st.columns([2.3, 1])
 
+
+# =========================================================
+# MAIN BOOKIEOS AREA
+# =========================================================
 
 with main:
 
@@ -36,6 +43,7 @@ with main:
     )
 
 
+    # ---------- CHAT MEMORY ----------
     if "messages" not in st.session_state:
         st.session_state.messages = []
 
@@ -46,6 +54,7 @@ with main:
             st.write(message["content"])
 
 
+    # ---------- VOICE INPUT ----------
     audio = st.audio_input("🎤 Talk to BookieOS")
 
     voice_prompt = None
@@ -73,6 +82,7 @@ with main:
             )
 
 
+    # ---------- TEXT INPUT ----------
     prompt = st.chat_input(
         "Ask BookieOS anything..."
     )
@@ -82,6 +92,7 @@ with main:
         prompt = voice_prompt
 
 
+    # ---------- PROCESS REQUEST ----------
     if prompt:
 
         st.session_state.messages.append({
@@ -117,6 +128,7 @@ with main:
                 "europa league",
                 "conference league",
 
+                # Greek
                 "βρες αγώνες",
                 "βρες μου αγώνες",
                 "καλύτερους αγώνες",
@@ -133,8 +145,11 @@ with main:
             )
 
 
-            if use_scout:
+            # =====================================================
+            # AGENT 1 + AUTOMATIC AGENT 2
+            # =====================================================
 
+            if use_scout:
 
                 with st.spinner(
                     "⚽ Weekly Match Scout is researching..."
@@ -171,6 +186,7 @@ For every proposed bet:
 2. Identify the proposed betting market.
 3. Research whether the betting idea makes statistical sense.
 4. Check relevant current team or player information.
+
 5. Rate the bet:
 
 STRONG
@@ -189,8 +205,8 @@ UNKNOWN
 As a general target, prefer bets that would likely have decimal odds
 around 2.00 to 6.00.
 
-Avoid bets that would probably be below approximately 1.80 unless there
-is an exceptional reason.
+Avoid bets that would probably be below approximately 1.80 unless
+there is an exceptional reason.
 
 8. If the proposed bet is too low or weak, suggest a better,
 more interesting alternative.
@@ -221,6 +237,10 @@ Do not require the user to ask you about each match individually.
                 )
 
 
+            # =====================================================
+            # NORMAL BOOKIEOS
+            # =====================================================
+
             else:
 
                 response = client.responses.create(
@@ -230,11 +250,14 @@ Do not require the user to ask you about each match individually.
                     instructions="""
 You are BookieOS, the internal AI operating system for BookieCo.
 
-Your job is to coordinate specialist AI agents and communicate with the user.
+Your job is to coordinate specialist AI agents and communicate
+with the user.
 
 CONNECTED AGENTS:
 
 1. Weekly Match Scout
+
+The Weekly Match Scout:
 - Researches upcoming sporting events.
 - Creates weekly marketing recommendations.
 - Prioritises the Cyprus audience.
@@ -243,11 +266,15 @@ CONNECTED AGENTS:
 - Proposes interesting football betting markets.
 
 2. Bet Researcher
+
+The Bet Researcher:
 - Automatically receives the Weekly Match Scout report.
 - Analyses every proposed football betting market.
 - Researches whether the betting angle makes sense.
-- Looks for more interesting alternatives when a proposed bet is too low.
-- Will eventually verify BookieCo's real markets and odds.
+- Looks for more interesting alternatives when a proposed bet
+  is too low.
+- Will verify BookieCo's real markets and odds once the live
+  market integration is completed.
 
 AUTOMATIC WORKFLOW:
 
@@ -263,13 +290,10 @@ to analyse every match.
 
 BOOKIECO DATA:
 
-We are currently building the connection to BookieCo's real betting data.
+The BookieCo live market-feed connection is currently being built.
 
-Until that connection has been successfully verified:
-
-- Never invent BookieCo odds.
-- Never claim that a market definitely exists at BookieCo.
-- Never invent market availability.
+Never invent BookieCo odds.
+Never invent BookieCo market availability.
 
 NOT YET CONNECTED:
 
@@ -278,10 +302,7 @@ NOT YET CONNECTED:
 
 LANGUAGE:
 
-The user may communicate in English or Greek.
-
 If the user speaks Greek, respond in Greek.
-
 If the user speaks English, respond in English.
 
 Be concise, professional and helpful.
@@ -318,39 +339,47 @@ Be concise, professional and helpful.
             st.write(answer)
 
 
+# =========================================================
+# AGENTS PANEL
+# =========================================================
+
 with agents:
 
     st.subheader("⚡ LIVE AGENTS")
 
 
+    # ---------- MARKETING MANAGER ----------
     st.markdown("**🤖 Marketing Manager**")
     st.warning("● NOT CONNECTED")
 
 
+    # ---------- WEEKLY MATCH SCOUT ----------
     st.markdown("**⚽ Weekly Match Scout**")
     st.success("● CONNECTED")
 
 
+    # ---------- BET RESEARCHER ----------
     st.markdown("**🔎 Bet Researcher**")
     st.success("● CONNECTED - AUTO")
 
 
+    # ---------- PROMOTION SELECTOR ----------
     st.markdown("**📢 Promotion Selector**")
     st.warning("● NOT CONNECTED")
 
+
+    # =====================================================
+    # BOOKIECO LIVE MARKET FEED
+    # =====================================================
 
     st.divider()
 
     st.markdown("**📡 BookieCo Market Feed**")
 
 
-      if st.button(
-        "🧪 Test BookieCo Live Feed"
-    ):
+    if st.button("🧪 Test BookieCo Live Feed"):
 
-        with st.spinner(
-            "Connecting to BookieCo..."
-        ):
+        with st.spinner("Connecting to BookieCo..."):
 
             feed = BookieCoLiveFeed()
 
@@ -401,6 +430,8 @@ with agents:
             )
 
 
+            # ---------- SHOW MATCHES ----------
+
             matches = result.get(
                 "matches",
                 []
@@ -409,9 +440,7 @@ with agents:
 
             if matches:
 
-                st.markdown(
-                    "### ⚽ Matches found"
-                )
+                st.markdown("### ⚽ Matches found")
 
 
                 for match in matches:
@@ -446,8 +475,7 @@ with agents:
 
 
                     st.write(
-                        "⚽ "
-                        + match_name
+                        "⚽ " + match_name
                     )
 
                     st.caption(
@@ -478,12 +506,11 @@ with agents:
                 )
             )
 
+
+    # ---------- SYSTEM STATUS ----------
+
     st.divider()
 
-    st.caption(
-        "SYSTEM STATUS"
-    )
+    st.caption("SYSTEM STATUS")
 
-    st.success(
-        "BOOKIEOS ONLINE"
-    )
+    st.success("BOOKIEOS ONLINE")
