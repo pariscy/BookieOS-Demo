@@ -4,6 +4,7 @@ from openai import OpenAI
 from weekly_match_scout import run_weekly_match_scout
 from sports_news_monitor import run_sports_news_monitor
 from competitor_watch import run_competitor_watch
+from sports_calendar import run_sports_calendar
 from bet_researcher import run_bet_researcher
 from marketing_manager import run_marketing_manager
 
@@ -20,12 +21,23 @@ client = OpenAI(
 )
 
 
+# =========================================================
+# SESSION STATE
+# =========================================================
+
 if "sports_news_report" not in st.session_state:
     st.session_state.sports_news_report = None
 
 if "competitor_report" not in st.session_state:
     st.session_state.competitor_report = None
 
+if "sports_calendar_report" not in st.session_state:
+    st.session_state.sports_calendar_report = None
+
+
+# =========================================================
+# HEADER
+# =========================================================
 
 st.title("◉ BOOKIEOS")
 st.caption("BookieCo Artificial Intelligence Operating System")
@@ -42,9 +54,12 @@ main_column, agent_column = st.columns([3, 1])
 with main_column:
 
     st.subheader("BookieOS")
-
     st.caption("Ask BookieOS in English or Greek.")
 
+
+    # =====================================================
+    # VOICE
+    # =====================================================
 
     voice_prompt = None
 
@@ -76,6 +91,10 @@ with main_column:
             )
 
 
+    # =====================================================
+    # TEXT
+    # =====================================================
+
     text_prompt = st.chat_input(
         "Ask BookieOS..."
     )
@@ -83,10 +102,13 @@ with main_column:
     user_prompt = text_prompt or voice_prompt
 
 
+    # =====================================================
+    # REQUEST
+    # =====================================================
+
     if user_prompt:
 
         with st.chat_message("user"):
-
             st.write(user_prompt)
 
 
@@ -129,11 +151,16 @@ with main_column:
 
             # =================================================
             # WEEKLY MARKETING WORKFLOW
+            # Scout → Researcher → Marketing Manager
             # =================================================
 
             if use_scout:
 
                 try:
+
+                    # =========================================
+                    # WEEKLY MATCH SCOUT
+                    # =========================================
 
                     with st.spinner(
                         "🔎 Weekly Match Scout is researching..."
@@ -155,6 +182,10 @@ with main_column:
 
                     st.divider()
 
+
+                    # =========================================
+                    # BET RESEARCHER
+                    # =========================================
 
                     with st.spinner(
                         "🧠 Bet Researcher is analysing..."
@@ -207,7 +238,8 @@ Do NOT invent BookieCo odds.
 
 Do NOT claim that a betting market is available at BookieCo.
 
-Market availability will be verified by another system in the future.
+Market availability will be verified by another system
+in the future.
 
 If an idea is weak, suggest a better betting angle.
 
@@ -234,6 +266,10 @@ SCOUT REPORT:
 
                     st.divider()
 
+
+                    # =========================================
+                    # MARKETING MANAGER
+                    # =========================================
 
                     with st.spinner(
                         "📣 Marketing Manager is building the weekly plan..."
@@ -284,38 +320,45 @@ You are BookieOS.
 You are the central AI assistant for BookieCo,
 a retail betting company in Cyprus.
 
-CONNECTED MARKETING AGENTS:
+AUTOMATIC MARKETING WORKFLOW:
 
 1. Weekly Match Scout
+
+Finds strong upcoming sporting events for
+BookieCo marketing.
+
 2. Bet Researcher
+
+Researches teams, players, statistics and proposed
+football betting ideas.
+
 3. Marketing Manager
+
+Decides what BookieCo should actually market.
 
 INDEPENDENT MANUAL AGENTS:
 
 4. Sports News Monitor
 
-Checks important current sports news such as:
-
-- injuries
-- suspensions
-- doubtful players
-- players ruled out
-- manager changes
-- postponements
-- major squad news
+Checks important current sports developments including
+injuries, suspensions, doubtful players, manager changes,
+postponements and major squad news.
 
 5. Competitor Watch
 
-Checks current public marketing activity from
-betting competitors relevant to Cyprus.
+Checks current public marketing activity from betting
+competitors relevant to Cyprus.
 
-It can research:
+6. Sports Calendar
 
-- promotions
-- campaigns
-- major sporting events being promoted
-- unusual betting concepts
-- competitor marketing trends
+Looks approximately 90 days ahead for major sporting
+events that BookieCo should prepare marketing for.
+
+PLANNED AGENTS:
+
+- Promotion Selector
+- Creative Director
+- Social Media Writer
 
 BookieOS currently does NOT have access to
 BookieCo live betting markets or odds.
@@ -404,11 +447,20 @@ with agent_column:
     )
 
 
+    st.write(
+        "🟢 📅 Sports Calendar"
+    )
+
+    st.caption(
+        "CONNECTED · MANUAL"
+    )
+
+
     st.divider()
 
 
     # =====================================================
-    # SPORTS NEWS MONITOR
+    # SPORTS NEWS
     # =====================================================
 
     st.subheader(
@@ -597,6 +649,73 @@ If there are no important developments, say so clearly.
 
             st.caption(
                 "No competitor check has been run yet."
+            )
+
+
+    st.divider()
+
+
+    # =====================================================
+    # SPORTS CALENDAR
+    # =====================================================
+
+    st.subheader(
+        "📅 Sports Calendar"
+    )
+
+    st.caption(
+        "Look ahead 90 days for major marketing opportunities."
+    )
+
+
+    if st.button(
+        "📅 Check Next 90 Days",
+        use_container_width=True
+    ):
+
+        try:
+
+            with st.spinner(
+                "Building the 90-day sports calendar..."
+            ):
+
+                st.session_state.sports_calendar_report = (
+                    run_sports_calendar(
+                        client
+                    )
+                )
+
+
+        except Exception as e:
+
+            st.error(
+                f"Sports Calendar error: {e}"
+            )
+
+
+    if st.session_state.sports_calendar_report:
+
+        with st.container(
+            border=True
+        ):
+
+            st.markdown(
+                "### 90-Day Marketing Radar"
+            )
+
+            st.write(
+                st.session_state.sports_calendar_report
+            )
+
+
+    else:
+
+        with st.container(
+            border=True
+        ):
+
+            st.caption(
+                "No 90-day calendar check has been run yet."
             )
 
 
