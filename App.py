@@ -38,9 +38,30 @@ st.markdown(
         padding-right: 12px;
     }
 
-    /* Make all right-panel text inputs clearly visible */
+    /* Make right-panel input boxes impossible to miss */
     div[data-testid="stHorizontalBlock"] > div[data-testid="stColumn"]:last-child textarea {
-        min-height: 92px !important;
+        min-height: 108px !important;
+        background: #171a20 !important;
+        color: #ffffff !important;
+        border: 2px solid rgba(241,196,0,.85) !important;
+        border-radius: 10px !important;
+        box-shadow: 0 0 0 1px rgba(68,136,62,.35), 0 0 14px rgba(241,196,0,.10) !important;
+        padding: 12px 14px !important;
+    }
+
+    div[data-testid="stHorizontalBlock"] > div[data-testid="stColumn"]:last-child textarea:focus {
+        border-color: #F1C400 !important;
+        box-shadow: 0 0 0 2px rgba(241,196,0,.22), 0 0 18px rgba(241,196,0,.18) !important;
+    }
+
+    div[data-testid="stHorizontalBlock"] > div[data-testid="stColumn"]:last-child [data-testid="stTextArea"] label {
+        color: #F1C400 !important;
+        font-weight: 800 !important;
+        font-size: 0.95rem !important;
+    }
+
+    div[data-testid="stHorizontalBlock"] > div[data-testid="stColumn"]:last-child [data-testid="stTextArea"] {
+        margin-bottom: 10px !important;
     }
 
     div[data-testid="stHorizontalBlock"] > div[data-testid="stColumn"]:last-child [data-baseweb="textarea"],
@@ -137,7 +158,6 @@ st.title("◉ BION")
 st.caption("BookieCo Intelligence Operations Network")
 st.divider()
 
-# Wider controls panel while keeping the report area dominant.
 main_column, agent_column = st.columns([3, 1.35], gap="large")
 
 with main_column:
@@ -201,14 +221,14 @@ with agent_column:
     st.divider()
 
     st.subheader("🔎 Weekly Workflow")
-    weekly_request = st.text_area("Περίοδος / αίτημα", value="Βρες τους καλύτερους αγώνες της επόμενης εβδομάδας για marketing.", height=100, key="weekly_request_input")
+    weekly_request = st.text_area("🟡 ΓΡΑΨΕ ΕΔΩ — Περίοδος / αίτημα", value="Βρες τους καλύτερους αγώνες της επόμενης εβδομάδας για marketing.", height=110, key="weekly_request_input")
     if st.button("🔎 RUN WEEKLY WORKFLOW", use_container_width=True):
         try: run_weekly_workflow(weekly_request)
         except Exception as e: st.error(f"Σφάλμα Weekly Workflow: {e}")
     st.divider()
 
     st.subheader("🔬 Research Agent 09")
-    st.text_area("Τι θέλεις να ερευνήσει;", height=120, key="research_task_input")
+    st.text_area("🟡 ΓΡΑΨΕ ΕΔΩ — Τι θέλεις να ερευνήσει;", height=120, key="research_task_input")
     if st.button("🔬 RUN RESEARCH", type="primary", use_container_width=True):
         task = st.session_state.research_task_input.strip()
         if task:
@@ -244,7 +264,7 @@ with agent_column:
     st.divider()
 
     st.subheader("📰 Sports Article Writer")
-    article_brief = st.text_area("Τι θέλεις να γράψει;", placeholder="π.χ. Γράψε άρθρο για το αποψινό Champions League...", height=110, key="article_brief_input")
+    article_brief = st.text_area("🟡 ΓΡΑΨΕ ΕΔΩ — Τι θέλεις να γράψει;", placeholder="π.χ. Γράψε άρθρο για το αποψινό Champions League...", height=120, key="article_brief_input")
     article_length_label = st.selectbox("Μήκος άρθρου", ["Σύντομο", "Μεσαίο", "Μεγάλο"], key="article_length")
     article_length_map = {"Σύντομο":"Short", "Μεσαίο":"Medium", "Μεγάλο":"Long"}
     if st.button("📰 Δημιουργία Άρθρου", use_container_width=True):
@@ -257,7 +277,7 @@ with agent_column:
     st.divider()
 
     st.subheader("💡 Marketing Brainstorm")
-    brainstorm_challenge = st.text_area("Για ποιο θέμα θέλεις ιδέες;", placeholder="π.χ. Ιδέες για καμπάνια Champions League...", height=110, key="brainstorm_challenge_input")
+    brainstorm_challenge = st.text_area("🟡 ΓΡΑΨΕ ΕΔΩ — Για ποιο θέμα θέλεις ιδέες;", placeholder="π.χ. Ιδέες για καμπάνια Champions League...", height=120, key="brainstorm_challenge_input")
     brainstorm_goal = st.selectbox("Στόχος", ["Γενικές ιδέες marketing", "Αύξηση επισκεψιμότητας στα καταστήματα", "Brand awareness", "Καμπάνια για special event", "Customer engagement", "Κάτι ασυνήθιστο / πειραματικό"], key="brainstorm_goal")
     if st.button("💡 Δημιουργία Ιδεών", use_container_width=True):
         if brainstorm_challenge.strip():
