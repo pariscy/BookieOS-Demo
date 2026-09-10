@@ -11,20 +11,74 @@ from sports_article_writer import run_sports_article_writer
 from marketing_brainstorm import run_marketing_brainstorm
 from research_agent import run_research_agent
 
+
 st.set_page_config(page_title="BION", page_icon="◉", layout="wide")
 client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
 
-for key in [
-    "sports_news_report",
-    "competitor_report",
-    "sports_calendar_report",
-    "calendar_promo_ideas",
-    "sports_article_report",
-    "brainstorm_report",
-    "research_report",
-]:
+
+st.markdown(
+    """
+    <style>
+    /* Two independently scrolling work areas */
+    div[data-testid="stHorizontalBlock"]:has(div[data-testid="stColumn"]) {
+        align-items: stretch;
+    }
+
+    div[data-testid="stHorizontalBlock"] > div[data-testid="stColumn"] {
+        height: calc(100vh - 175px);
+        overflow-y: auto;
+        overscroll-behavior: contain;
+        padding-right: 12px;
+        scrollbar-gutter: stable;
+    }
+
+    div[data-testid="stHorizontalBlock"] > div[data-testid="stColumn"]:last-child {
+        border-left: 1px solid rgba(255,255,255,.10);
+        padding-left: 18px;
+        padding-right: 8px;
+    }
+
+    div[data-testid="stHorizontalBlock"] > div[data-testid="stColumn"]::-webkit-scrollbar {
+        width: 8px;
+    }
+
+    div[data-testid="stHorizontalBlock"] > div[data-testid="stColumn"]::-webkit-scrollbar-thumb {
+        background: rgba(241,196,0,.25);
+        border-radius: 20px;
+    }
+
+    div[data-testid="stHorizontalBlock"] > div[data-testid="stColumn"]::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    @media (max-width: 900px) {
+        div[data-testid="stHorizontalBlock"] > div[data-testid="stColumn"] {
+            height: auto;
+            overflow: visible;
+        }
+        div[data-testid="stHorizontalBlock"] > div[data-testid="stColumn"]:last-child {
+            border-left: none;
+            padding-left: 0;
+        }
+    }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
+
+for key, default in {
+    "main_title": "BION READY",
+    "main_report": None,
+    "research_task_input": (
+        "Research the most interesting football matches in the next 7 days for a Cyprus betting audience. "
+        "Identify 5 matches, explain why each is interesting, and suggest betting-market angles worth investigating. "
+        "Do not invent odds."
+    ),
+}.items():
     if key not in st.session_state:
-        st.session_state[key] = None
+        st.session_state[key] = default
+
 
 GREEK_LANGUAGE_RULE = """
 ΓΛΩΣΣΙΚΟΣ ΚΑΝΟΝΑΣ BION:
@@ -48,53 +102,47 @@ def detect_agent(user_prompt):
         "βαθιά έρευνα", "βαθια ερευνα", "ερεύνησε", "ερευνησε"
     ]):
         return "research"
-
     if contains_any(text, [
         "brainstorm", "marketing brainstorm", "ιδέες marketing", "ιδεες marketing",
         "ιδέες μάρκετινγκ", "ιδεες μαρκετινγκ", "καμπάνια", "καμπανια"
     ]):
         return "brainstorm"
-
     if contains_any(text, [
         "ανταγωνισ", "competitor", "τι κάνουν οι άλλοι", "τι κανουν οι αλλοι"
     ]):
         return "competitor"
-
     if contains_any(text, [
         "sports news", "αθλητικά νέα", "αθλητικα νεα", "τραυματισ", "τιμωρί",
         "τιμωρι", "suspension", "injury", "ποιος λείπει", "ποιος λειπει"
     ]):
         return "news"
-
     if contains_any(text, [
         "sports calendar", "ημερολόγιο", "ημερολογιο", "90 μέρες", "90 μερες",
         "επόμενους 3 μήνες", "επομενους 3 μηνες", "μεγάλα events", "μεγαλα events"
     ]):
         return "calendar"
-
     if contains_any(text, [
         "γράψε άρθρο", "γραψε αρθρο", "άρθρο", "αρθρο", "sports article",
         "news article", "article writer"
     ]):
         return "article"
-
     if contains_any(text, [
         "weekly match", "match scout", "matches this week", "matches next week",
         "find matches", "best matches", "αγώνες εβδομάδας", "αγωνες εβδομαδας",
         "βρες αγώνες", "βρες αγωνες", "καλύτεροι αγώνες", "καλυτεροι αγωνες"
     ]):
         return "scout"
-
     return "bion"
+
+
+def set_main_result(title, content):
+    st.session_state.main_title = title
+    st.session_state.main_report = content
 
 
 def run_weekly_workflow(user_prompt):
     with st.spinner("🔎 Το Weekly Match Scout κάνει έρευνα..."):
         scout_report = run_weekly_match_scout(client, user_prompt)
-
-    st.markdown("### 🔎 Weekly Match Scout")
-    st.write(scout_report)
-    st.divider()
 
     researcher_task = f"""
 {GREEK_LANGUAGE_RULE}
@@ -110,16 +158,27 @@ SCOUT REPORT:
     with st.spinner("🧠 Το Bet Researcher αναλύει τα bet types..."):
         research_report = run_bet_researcher(client, researcher_task)
 
-    st.markdown("### 🧠 Bet Researcher")
-    st.write(research_report)
-    st.divider()
-
     with st.spinner("📣 Το Marketing Manager ετοιμάζει το πλάνο..."):
         marketing_report = run_marketing_manager(scout_report, research_report)
 
-    st.markdown("### 📣 Marketing Manager")
-    st.write(marketing_report)
-    st.success("Η ανάλυση marketing ολοκληρώθηκε.")
+    combined = f"""
+## 🔎 Weekly Match Scout
+
+{scout_report}
+
+---
+
+## 🧠 Bet Researcher
+
+{research_report}
+
+---
+
+## 📣 Marketing Manager
+
+{marketing_report}
+"""
+    set_main_result("Weekly Marketing Workflow", combined)
 
 
 st.title("◉ BION")
@@ -152,106 +211,67 @@ with main_column:
     user_prompt = text_prompt or voice_prompt
 
     if user_prompt:
-        with st.chat_message("user"):
-            st.write(user_prompt)
+        selected_agent = detect_agent(user_prompt)
+        try:
+            if selected_agent == "scout":
+                run_weekly_workflow(user_prompt)
 
-        with st.chat_message("assistant"):
-            selected_agent = detect_agent(user_prompt)
+            elif selected_agent == "research":
+                with st.spinner("🔬 Το Research Agent κάνει live web research..."):
+                    result = run_research_agent(client, user_prompt)
+                set_main_result("🔬 Research Agent 09", result)
 
-            try:
-                if selected_agent == "scout":
-                    run_weekly_workflow(user_prompt)
+            elif selected_agent == "brainstorm":
+                with st.spinner("💡 Το Marketing Brainstorm σκέφτεται..."):
+                    result = run_marketing_brainstorm(client, user_prompt)
+                set_main_result("💡 Marketing Brainstorm", result)
 
-                elif selected_agent == "research":
-                    st.caption("🔬 Δρομολόγηση → Research Agent 09")
-                    with st.spinner("🔬 Το Research Agent κάνει live web research..."):
-                        result = run_research_agent(client, user_prompt)
-                    st.session_state.research_report = result
-                    st.write(result)
+            elif selected_agent == "competitor":
+                with st.spinner("🏆 Έλεγχος ανταγωνιστών..."):
+                    result = run_competitor_watch(client)
+                set_main_result("🏆 Competitor Watch", result)
 
-                elif selected_agent == "brainstorm":
-                    st.caption("💡 Δρομολόγηση → Marketing Brainstorm")
-                    with st.spinner("💡 Το Marketing Brainstorm σκέφτεται..."):
-                        result = run_marketing_brainstorm(client, user_prompt)
-                    st.write(result)
+            elif selected_agent == "news":
+                with st.spinner("🚨 Έλεγχος sports news..."):
+                    result = run_sports_news_monitor(client, user_prompt)
+                set_main_result("🚨 Sports News Monitor", result)
 
-                elif selected_agent == "competitor":
-                    st.caption("🏆 Δρομολόγηση → Competitor Watch")
-                    with st.spinner("🏆 Έλεγχος ανταγωνιστών..."):
-                        result = run_competitor_watch(client)
-                    st.write(result)
+            elif selected_agent == "calendar":
+                with st.spinner("📅 Έλεγχος επόμενων 90 ημερών..."):
+                    result = run_sports_calendar(client)
+                set_main_result("📅 Sports Calendar", result)
 
-                elif selected_agent == "news":
-                    st.caption("🚨 Δρομολόγηση → Sports News Monitor")
-                    with st.spinner("🚨 Έλεγχος sports news..."):
-                        result = run_sports_news_monitor(client, user_prompt)
-                    st.write(result)
+            elif selected_agent == "article":
+                with st.spinner("📰 Δημιουργία άρθρου..."):
+                    result = run_sports_article_writer(client, user_prompt, language="Greek", length="Medium")
+                set_main_result("📰 Sports Article Writer", result)
 
-                elif selected_agent == "calendar":
-                    st.caption("📅 Δρομολόγηση → Sports Calendar")
-                    with st.spinner("📅 Έλεγχος επόμενων 90 ημερών..."):
-                        result = run_sports_calendar(client)
-                    st.write(result)
-
-                elif selected_agent == "article":
-                    st.caption("📰 Δρομολόγηση → Sports Article Writer")
-                    with st.spinner("📰 Δημιουργία άρθρου..."):
-                        result = run_sports_article_writer(
-                            client,
-                            user_prompt,
-                            language="Greek",
-                            length="Medium",
-                        )
-                    st.write(result)
-
-                else:
-                    response = client.responses.create(
-                        model="gpt-5.6-luna",
-                        instructions=f"""
+            else:
+                response = client.responses.create(
+                    model="gpt-5.6-luna",
+                    instructions=f"""
 You are BION, the central AI assistant for BookieCo, a retail betting company in Cyprus.
 {GREEK_LANGUAGE_RULE}
 AVAILABLE AGENTS: Weekly Match Scout, Bet Researcher, Marketing Manager, Sports News Monitor, Competitor Watch, Sports Calendar, Sports Article Writer, Marketing Brainstorm, Research Agent 09.
 PLANNED: Promotion Selector, Creative Director, Social Media Writer.
 Never invent BookieCo odds or market availability. Keep answers practical and concise.
 """,
-                        input=user_prompt,
-                    )
-                    st.write(response.output_text)
+                    input=user_prompt,
+                )
+                set_main_result("◉ BION", response.output_text)
 
-            except Exception as e:
-                st.error(f"Σφάλμα agent: {e}")
+        except Exception as e:
+            st.error(f"Σφάλμα agent: {e}")
 
     st.divider()
-    st.subheader("🔬 Research Agent 09")
-    st.caption("Live, source-backed web research. Τα αποτελέσματα εμφανίζονται σε όλο το διαθέσιμο πλάτος.")
+    st.markdown(f"## {st.session_state.main_title}")
 
-    default_research = (
-        "Research the most interesting football matches in the next 7 days for a Cyprus betting audience. "
-        "Identify 5 matches, explain why each is interesting, and suggest betting-market angles worth investigating. "
-        "Do not invent odds."
-    )
-
-    research_task = st.text_area(
-        "Τι θέλεις να ερευνήσει;",
-        value=default_research,
-        height=110,
-        key="research_task_input",
-    )
-
-    if st.button("🔬 RUN RESEARCH", type="primary", use_container_width=True):
-        if not research_task.strip():
-            st.warning("Γράψε πρώτα τι θέλεις να ερευνήσει.")
-        else:
-            try:
-                with st.spinner("Το Research Agent κάνει live web research..."):
-                    st.session_state.research_report = run_research_agent(client, research_task)
-            except Exception as e:
-                st.error(f"Σφάλμα Research Agent: {e}")
-
-    if st.session_state.research_report:
-        st.markdown("## Research Report")
+    if st.session_state.main_report:
         with st.container(border=True):
-            st.write(st.session_state.research_report)
+            st.markdown(st.session_state.main_report)
+    else:
+        with st.container(border=True):
+            st.caption("Τα αποτελέσματα από οποιονδήποτε agent θα εμφανίζονται εδώ, σε όλο το διαθέσιμο πλάτος.")
 
 
 with agent_column:
@@ -275,105 +295,98 @@ with agent_column:
 
     st.divider()
 
-    st.subheader("🚨 Αθλητική Ενημέρωση")
-    if st.button("🚨 Έλεγχος Sports News", use_container_width=True):
+    st.subheader("🔎 Weekly Workflow")
+    weekly_request = st.text_area(
+        "Περίοδος / αίτημα",
+        value="Βρες τους καλύτερους αγώνες της επόμενης εβδομάδας για marketing.",
+        height=85,
+        key="weekly_request_input",
+    )
+    if st.button("🔎 RUN WEEKLY WORKFLOW", use_container_width=True):
         try:
-            with st.spinner("Έλεγχος σημαντικών αθλητικών νέων..."):
-                st.session_state.sports_news_report = run_sports_news_monitor(
-                    client,
-                    f"{GREEK_LANGUAGE_RULE}\nΚάνε ανεξάρτητο έλεγχο current sports news που μπορούν πραγματικά να επηρεάσουν το BookieCo.",
-                )
+            run_weekly_workflow(weekly_request)
         except Exception as e:
-            st.error(f"Σφάλμα Sports News Monitor: {e}")
-
-    if st.session_state.sports_news_report:
-        with st.container(border=True):
-            st.write(st.session_state.sports_news_report)
+            st.error(f"Σφάλμα Weekly Workflow: {e}")
 
     st.divider()
 
-    st.subheader("🏆 Ανταγωνισμός")
+    st.subheader("🔬 Research Agent 09")
+    st.text_area("Τι θέλεις να ερευνήσει;", height=120, key="research_task_input")
+    if st.button("🔬 RUN RESEARCH", type="primary", use_container_width=True):
+        task = st.session_state.research_task_input.strip()
+        if task:
+            try:
+                with st.spinner("Live web research..."):
+                    result = run_research_agent(client, task)
+                set_main_result("🔬 Research Agent 09", result)
+            except Exception as e:
+                st.error(f"Σφάλμα Research Agent: {e}")
+
+    st.divider()
+
+    st.subheader("🚨 Sports News")
+    if st.button("🚨 Έλεγχος Sports News", use_container_width=True):
+        try:
+            with st.spinner("Έλεγχος σημαντικών αθλητικών νέων..."):
+                result = run_sports_news_monitor(
+                    client,
+                    f"{GREEK_LANGUAGE_RULE}\nΚάνε ανεξάρτητο έλεγχο current sports news που μπορούν πραγματικά να επηρεάσουν το BookieCo.",
+                )
+            set_main_result("🚨 Sports News Monitor", result)
+        except Exception as e:
+            st.error(f"Σφάλμα Sports News Monitor: {e}")
+
+    st.divider()
+
+    st.subheader("🏆 Competitor Watch")
     if st.button("🏆 Έλεγχος Ανταγωνιστών", use_container_width=True):
         try:
             with st.spinner("Έλεγχος δραστηριότητας ανταγωνιστών..."):
-                st.session_state.competitor_report = run_competitor_watch(client)
+                result = run_competitor_watch(client)
+            set_main_result("🏆 Competitor Watch", result)
         except Exception as e:
             st.error(f"Σφάλμα Competitor Watch: {e}")
-
-    if st.session_state.competitor_report:
-        with st.container(border=True):
-            st.write(st.session_state.competitor_report)
 
     st.divider()
 
     st.subheader("📅 Sports Calendar")
-    if st.button("📅 Έλεγχος Επόμενων 90 Ημερών", use_container_width=True):
+    if st.button("📅 Επόμενες 90 Ημέρες", use_container_width=True):
         try:
             with st.spinner("Δημιουργία 90-day Sports Calendar..."):
-                st.session_state.sports_calendar_report = run_sports_calendar(client)
-                st.session_state.calendar_promo_ideas = None
+                result = run_sports_calendar(client)
+            set_main_result("📅 Sports Calendar", result)
         except Exception as e:
             st.error(f"Σφάλμα Sports Calendar: {e}")
-
-    if st.session_state.sports_calendar_report:
-        with st.container(border=True):
-            st.write(st.session_state.sports_calendar_report)
-
-        if st.button("💡 Δημιουργία Promo Ideas", use_container_width=True):
-            try:
-                promo_response = client.responses.create(
-                    model="gpt-5.6-luna",
-                    input=f"{GREEK_LANGUAGE_RULE}\nΔημιούργησε μόνο concepts για special-event promotions. Μην επινοείς odds ή BookieCo market availability.\n\nCALENDAR:\n{st.session_state.sports_calendar_report}",
-                )
-                st.session_state.calendar_promo_ideas = promo_response.output_text
-            except Exception as e:
-                st.error(f"Σφάλμα Promo Ideas: {e}")
-
-        if st.session_state.calendar_promo_ideas:
-            with st.container(border=True):
-                st.write(st.session_state.calendar_promo_ideas)
 
     st.divider()
 
     st.subheader("📰 Sports Article Writer")
-    article_brief = st.text_area("Τι θέλεις να γράψει;", key="article_brief_input")
+    article_brief = st.text_area("Τι θέλεις να γράψει;", height=100, key="article_brief_input")
     article_length_label = st.selectbox(
         "Μήκος άρθρου",
         ["Σύντομο", "Μεσαίο", "Μεγάλο"],
         key="article_length",
     )
-    article_length_map = {
-        "Σύντομο": "Short",
-        "Μεσαίο": "Medium",
-        "Μεγάλο": "Long",
-    }
+    article_length_map = {"Σύντομο": "Short", "Μεσαίο": "Medium", "Μεγάλο": "Long"}
 
     if st.button("📰 Δημιουργία Άρθρου", use_container_width=True):
-        if not article_brief.strip():
-            st.warning("Γράψε πρώτα τι θέλεις να περιλαμβάνει το άρθρο.")
-        else:
+        if article_brief.strip():
             try:
                 with st.spinner("Δημιουργία άρθρου..."):
-                    st.session_state.sports_article_report = run_sports_article_writer(
+                    result = run_sports_article_writer(
                         client,
                         article_brief,
                         language="Greek",
                         length=article_length_map[article_length_label],
                     )
+                set_main_result("📰 Sports Article Writer", result)
             except Exception as e:
                 st.error(f"Σφάλμα Sports Article Writer: {e}")
-
-    if st.session_state.sports_article_report:
-        with st.container(border=True):
-            st.write(st.session_state.sports_article_report)
 
     st.divider()
 
     st.subheader("💡 Marketing Brainstorm")
-    brainstorm_challenge = st.text_area(
-        "Για ποιο θέμα θέλεις ιδέες;",
-        key="brainstorm_challenge_input",
-    )
+    brainstorm_challenge = st.text_area("Για ποιο θέμα θέλεις ιδέες;", height=100, key="brainstorm_challenge_input")
     brainstorm_goal = st.selectbox(
         "Στόχος",
         [
@@ -388,25 +401,15 @@ with agent_column:
     )
 
     if st.button("💡 Δημιουργία Ιδεών", use_container_width=True):
-        if not brainstorm_challenge.strip():
-            st.warning("Πες πρώτα στον agent για ποιο θέμα θέλεις ιδέες.")
-        else:
+        if brainstorm_challenge.strip():
             try:
                 with st.spinner("Το Marketing Brainstorm σκέφτεται..."):
-                    st.session_state.brainstorm_report = run_marketing_brainstorm(
-                        client,
-                        brainstorm_challenge,
-                        goal=brainstorm_goal,
-                    )
+                    result = run_marketing_brainstorm(client, brainstorm_challenge, goal=brainstorm_goal)
+                set_main_result("💡 Marketing Brainstorm", result)
             except Exception as e:
                 st.error(f"Σφάλμα Marketing Brainstorm: {e}")
 
-    if st.session_state.brainstorm_report:
-        with st.container(border=True):
-            st.write(st.session_state.brainstorm_report)
-
     st.divider()
-
     st.write("⚪ 🎁 Promotion Selector")
     st.caption("ΑΝΑΜΟΝΗ ΓΙΑ COMPANY FILES")
     st.write("⚪ 🎨 Creative Director")
