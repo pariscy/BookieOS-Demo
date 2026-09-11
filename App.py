@@ -10,6 +10,7 @@ from marketing_manager import run_marketing_manager
 from sports_article_writer import run_sports_article_writer
 from marketing_brainstorm import run_marketing_brainstorm
 from research_agent import run_research_agent
+from pdf_export import generate_report_pdf
 
 
 st.set_page_config(page_title="BION", page_icon="◉", layout="wide")
@@ -59,6 +60,7 @@ st.markdown(
 for key, default in {
     "main_title": "BION READY",
     "main_report": None,
+    "latest_scout_report": None,
     "research_task_input": "Research the most interesting football matches in the next 7 days for a Cyprus betting audience. Identify 5 matches, explain why each is interesting, and suggest betting-market angles worth investigating. Do not invent odds.",
 }.items():
     if key not in st.session_state:
@@ -93,6 +95,7 @@ def set_main_result(title, content):
 def run_weekly_workflow(user_prompt):
     with st.spinner("🔎 Το Weekly Match Scout κάνει έρευνα..."):
         scout_report = run_weekly_match_scout(client,user_prompt)
+    st.session_state.latest_scout_report = scout_report
     researcher_task = f"""{GREEK_LANGUAGE_RULE}\nΑνάλυσε ΚΑΘΕ προτεινόμενο football betting idea. Έλεγξε current form, παίκτες, τραυματισμούς/τιμωρίες και πρόσφατα στατιστικά. Βαθμολόγησε STRONG, REASONABLE ή WEAK. Μην δώσεις odds ή επινοήσεις BookieCo market availability.\n\nSCOUT REPORT:\n{scout_report}"""
     with st.spinner("🧠 Το Bet Researcher αναλύει τα bet types..."):
         research_report = run_bet_researcher(client,researcher_task)
@@ -148,6 +151,18 @@ with main_column:
     st.divider()
     st.markdown(f"## {st.session_state.main_title}")
     if st.session_state.main_report:
+        if st.session_state.latest_scout_report and st.session_state.main_title == "Weekly Marketing Workflow":
+            try:
+                pdf_bytes = generate_report_pdf("Weekly Match Scout Report", st.session_state.latest_scout_report)
+                st.download_button(
+                    "⬇️ EXPORT WEEKLY MATCH SCOUT PDF",
+                    data=pdf_bytes,
+                    file_name="BION_Weekly_Match_Scout_Report.pdf",
+                    mime="application/pdf",
+                    use_container_width=True,
+                )
+            except Exception as e:
+                st.warning(f"PDF export unavailable: {e}")
         with st.container(border=True): st.markdown(st.session_state.main_report)
     else:
         with st.container(border=True): st.caption("Τα αποτελέσματα από οποιονδήποτε agent θα εμφανίζονται εδώ, σε όλο το διαθέσιμο πλάτος.")
