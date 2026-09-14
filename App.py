@@ -10,11 +10,13 @@ from marketing_manager import run_marketing_manager
 from sports_article_writer import run_sports_article_writer
 from marketing_brainstorm import run_marketing_brainstorm
 from research_agent import run_research_agent
+from compliance_guard import run_compliance_guard
 from pdf_export import generate_report_pdf
 
 
 st.set_page_config(page_title="BION", page_icon="◉", layout="wide")
 client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
+private_knowledge = st.secrets.get("BOOKIECO_PRIVATE_KNOWLEDGE", "")
 
 st.markdown(
     """
@@ -79,6 +81,7 @@ def contains_any(text, words): return any(word in text for word in words)
 
 def detect_agent(user_prompt):
     text = user_prompt.lower()
+    if contains_any(text,["compliance","compliance guard","έλεγξε compliance","ελεγξε compliance","συμμόρφωση","συμμορφωση","επιτρέπεται να το ανεβάσουμε","επιτρεπεται να το ανεβασουμε","authority approval"]): return "compliance"
     if contains_any(text,["deep research","research agent","κάνε έρευνα","κανε ερευνα","βαθιά έρευνα","βαθια ερευνα","ερεύνησε","ερευνησε"]): return "research"
     if contains_any(text,["brainstorm","marketing brainstorm","ιδέες marketing","ιδεες marketing","ιδέες μάρκετινγκ","ιδεες μαρκετινγκ","καμπάνια","καμπανια"]): return "brainstorm"
     if contains_any(text,["ανταγωνισ","competitor","τι κάνουν οι άλλοι","τι κανουν οι αλλοι"]): return "competitor"
@@ -126,6 +129,9 @@ with main_column:
         selected_agent=detect_agent(user_prompt)
         try:
             if selected_agent=="scout": run_weekly_workflow(user_prompt)
+            elif selected_agent=="compliance":
+                with st.spinner("🛡️ Το Compliance Guard ελέγχει το περιεχόμενο..."): result=run_compliance_guard(client,user_prompt,private_knowledge)
+                set_main_result("🛡️ Compliance Guard",result)
             elif selected_agent=="research":
                 with st.spinner("🔬 Το Research Agent κάνει live web research..."): result=run_research_agent(client,user_prompt)
                 set_main_result("🔬 Research Agent 09",result)
@@ -145,7 +151,7 @@ with main_column:
                 with st.spinner("📰 Δημιουργία άρθρου..."): result=run_sports_article_writer(client,user_prompt,language="Greek",length="Medium")
                 set_main_result("📰 Sports Article Writer",result)
             else:
-                response=client.responses.create(model="gpt-5.6-luna",instructions=f"""You are BION, the central AI assistant for BookieCo, a retail betting company in Cyprus.\n{GREEK_LANGUAGE_RULE}\nAVAILABLE AGENTS: Weekly Match Scout, Bet Researcher, Marketing Manager, Sports News Monitor, Competitor Watch, Sports Calendar, Sports Article Writer, Marketing Brainstorm, Research Agent 09.\nPLANNED: Promotion Selector, Creative Director, Social Media Writer.\nNever invent BookieCo odds or market availability. Keep answers practical and concise.""",input=user_prompt)
+                response=client.responses.create(model="gpt-5.6-luna",instructions=f"""You are BION, the central AI assistant for BookieCo, a retail betting company in Cyprus.\n{GREEK_LANGUAGE_RULE}\nAVAILABLE AGENTS: Weekly Match Scout, Bet Researcher, Marketing Manager, Compliance Guard, Sports News Monitor, Competitor Watch, Sports Calendar, Sports Article Writer, Marketing Brainstorm, Research Agent 09.\nPLANNED: Promotion Selector, Creative Director, Social Media Writer.\nNever invent BookieCo odds, market availability, promotion terms or regulatory approval. Keep answers practical and concise.""",input=user_prompt)
                 set_main_result("◉ BION",response.output_text)
         except Exception as e: st.error(f"Σφάλμα agent: {e}")
     st.divider()
@@ -171,7 +177,7 @@ with agent_column:
     st.subheader("Ενεργοί Agents")
     agents=[
         ("🔎 Weekly Match Scout","ΣΥΝΔΕΔΕΜΕΝΟ"),("🧠 Bet Researcher","ΣΥΝΔΕΔΕΜΕΝΟ · AUTO"),("📣 Marketing Manager","ΣΥΝΔΕΔΕΜΕΝΟ · AUTO"),
-        ("🚨 Sports News Monitor","ΣΥΝΔΕΔΕΜΕΝΟ · MANUAL / VOICE"),("🏆 Competitor Watch","ΣΥΝΔΕΔΕΜΕΝΟ · MANUAL / VOICE"),("📅 Sports Calendar","ΣΥΝΔΕΔΕΜΕΝΟ · MANUAL / VOICE"),
+        ("🛡️ Compliance Guard","ΣΥΝΔΕΔΕΜΕΝΟ · MANUAL / VOICE"),("🚨 Sports News Monitor","ΣΥΝΔΕΔΕΜΕΝΟ · MANUAL / VOICE"),("🏆 Competitor Watch","ΣΥΝΔΕΔΕΜΕΝΟ · MANUAL / VOICE"),("📅 Sports Calendar","ΣΥΝΔΕΔΕΜΕΝΟ · MANUAL / VOICE"),
         ("📰 Sports Article Writer","ΣΥΝΔΕΔΕΜΕΝΟ · MANUAL / VOICE"),("💡 Marketing Brainstorm","ΣΥΝΔΕΔΕΜΕΝΟ · MANUAL / VOICE"),("🔬 Research Agent 09","TEST · MANUAL / VOICE")]
     for name,status in agents:
         st.write(f"🟢 {name}"); st.caption(status)
@@ -182,6 +188,17 @@ with agent_column:
     if st.button("🔎 RUN WEEKLY WORKFLOW",use_container_width=True):
         try: run_weekly_workflow(weekly_request)
         except Exception as e: st.error(f"Σφάλμα Weekly Workflow: {e}")
+    st.divider()
+
+    st.subheader("🛡️ Compliance Guard")
+    st.caption("Ελέγχει το τρέχον report / creative idea με βάση το public compliance knowledge της Αρχής.")
+    if st.button("🛡️ CHECK CURRENT REPORT",use_container_width=True):
+        if st.session_state.main_report:
+            try:
+                with st.spinner("Compliance check..."): result=run_compliance_guard(client,st.session_state.main_report,private_knowledge)
+                set_main_result("🛡️ Compliance Guard",result)
+            except Exception as e: st.error(f"Σφάλμα Compliance Guard: {e}")
+        else: st.warning("Δεν υπάρχει report για έλεγχο.")
     st.divider()
 
     st.subheader("🔬 Research Agent 09")
@@ -244,7 +261,7 @@ with agent_column:
         else: st.warning("Γράψε πρώτα για ποιο θέμα θέλεις ιδέες.")
     st.divider()
 
-    st.write("⚪ 🎁 Promotion Selector"); st.caption("ΑΝΑΜΟΝΗ ΓΙΑ COMPANY FILES")
+    st.write("⚪ 🎁 Promotion Selector"); st.caption("PRIVATE PROMOTIONS KNOWLEDGE · SECURE CONNECTION PENDING")
     st.write("⚪ 🎨 Creative Director"); st.caption("ΠΡΟΓΡΑΜΜΑΤΙΣΜΕΝΟ")
     st.write("⚪ ✍️ Social Media Writer"); st.caption("ΠΡΟΓΡΑΜΜΑΤΙΣΜΕΝΟ")
     st.divider(); st.success("BION ONLINE")
